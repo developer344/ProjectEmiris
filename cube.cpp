@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-
-#define ENDL '\n'
+#include <fstream>
+#include <vector>
 
 using namespace std;
 
@@ -11,12 +11,14 @@ int main(int argc, char **argv)
 {
     if (!(argc % 2) || argc > 17 || argc < 7)
     {
-        perror("Incorrect format of arguments\n");
+        cerr << "Incorrect format of arguments"
+             << endl;
+        return EXIT_FAILURE;
     }
 
-    string inputFile = "";
-    string queryFile = "";
-    string outputFile = "";
+    string inputFileName = "";
+    string queryFileName = "";
+    string outputFileName = "";
     int intK = 14;
     int intM = 10;
     int numberOfNearest = 1;
@@ -26,48 +28,68 @@ int main(int argc, char **argv)
     for (int i = 0; i < argc; i++)
         if (!strcmp(argv[i], "-i"))
         {
-            inputFile = string(argv[i + 1]);
-            cout << inputFile << ENDL;
+            inputFileName = string(argv[i + 1]);
+            cout << inputFileName << endl;
         }
         else if (!strcmp(argv[i], "-q"))
         {
-            queryFile = string(argv[i + 1]);
-            cout << queryFile << ENDL;
+            queryFileName = string(argv[i + 1]);
+            cout << queryFileName << endl;
         }
         else if (!strcmp(argv[i], "-o"))
         {
-            outputFile = string(argv[i + 1]);
-            cout << outputFile << ENDL;
+            outputFileName = string(argv[i + 1]);
+            cout << outputFileName << endl;
         }
         else if (!strcmp(argv[i], "-k"))
         {
             intK = atoi(argv[i + 1]);
-            cout << intK << ENDL;
+            cout << intK << endl;
         }
         else if (!strcmp(argv[i], "-L"))
         {
             intM = atoi(argv[i + 1]);
-            cout << intM << ENDL;
+            cout << intM << endl;
         }
         else if (!strcmp(argv[i], "-N"))
         {
             numberOfNearest = atoi(argv[i + 1]);
-            cout << numberOfNearest << ENDL;
+            cout << numberOfNearest << endl;
         }
         else if (!strcmp(argv[i], "-R"))
         {
             radius = atoi(argv[i + 1]);
-            cout << radius << ENDL;
+            cout << radius << endl;
         }
         else if (!strcmp(argv[i], "-probes"))
         {
             probes = atoi(argv[i + 1]);
-            cout << probes << ENDL;
+            cout << probes << endl;
         }
 
-    if (inputFile.empty() || outputFile.empty() || queryFile.empty())
+    if (inputFileName.empty() || outputFileName.empty() || queryFileName.empty())
     {
-        perror("Arguments must contain all input file, output file and query file. The rest of the arguments are optional\n");
-        exit(1);
+        cerr << "Arguments must contain all input file, output file and query file. The rest of the arguments are optional"
+             << endl;
+        return EXIT_FAILURE;
     }
+    fstream inputFile;
+    inputFile.open(inputFileName, ios::in);
+    if (!inputFile.is_open())
+    {
+        cerr << "Could not open the file: '"
+             << inputFileName << "'" << endl;
+        return EXIT_FAILURE;
+    }
+    vector<string> inputLines;
+    string line;
+    while (getline(inputFile, line))
+    {
+        inputLines.push_back(line);
+    }
+    for (const auto &i : inputLines)
+        cout << i << endl;
+
+    inputFile.close();
+    return EXIT_SUCCESS;
 }
