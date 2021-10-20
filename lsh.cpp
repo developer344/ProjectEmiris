@@ -73,7 +73,8 @@ int main(int argc, char **argv)
     if (!inputFile.is_open())
     {
         cerr << "Could not open the file: '"
-             << inputFileName << "'" << endl;
+             << inputFileName << "'"
+             << endl;
         return EXIT_FAILURE;
     }
     vector<string> inputLines;
