@@ -4,6 +4,7 @@
 #include <errno.h>
 #include <fstream>
 #include <vector>
+#include "hashTable.h"
 
 using namespace std;
 
@@ -83,8 +84,53 @@ int main(int argc, char **argv)
     {
         inputLines.push_back(line);
     }
+
+    vector<Point *> points;
     for (const auto &i : inputLines)
         cout << i << endl;
+
+    std::ofstream out(outputFileName);
+    //std::streambuf *coutbuf = std::cout.rdbuf(); //save old buf
+    std::cout.rdbuf(out.rdbuf()); //redirect std::cout to out.txt!
+    int numOfPoints = inputLines.size();
+
+    for (int i = 0; i < numOfPoints; i++)
+    {
+        // separate string by Tabs
+        // pick every element from 2nd to endl
+        //read point coordinates
+        PointPtr p = new Point;
+        string word = "";
+        int firstElem = 0;
+        for (char x : inputLines[i])
+        {
+            if (x == ' ')
+            {
+                if (firstElem)
+                    p->coords.push_back(atof(word.c_str()));
+                else
+                    p->id = word;
+                // cout << word << endl;
+                word = "";
+
+                firstElem = 1;
+            }
+            else
+            {
+                word = word + x;
+            }
+        }
+
+        points.push_back(p);
+    }
+
+    // for (auto &i : points)
+    // {
+    //     cout << i.id << endl;
+    //     for (auto &j : i.coords)
+    //         cout << j << " ";
+    //     cout << endl;
+    // }
 
     inputFile.close();
     return EXIT_SUCCESS;
