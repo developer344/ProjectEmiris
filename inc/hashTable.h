@@ -33,7 +33,6 @@ public:
     void InsertPoint(PointPtr point);
     int HashFunc(PointPtr point, int hashtableId);
     void PrintHashTables();
-    ~HashTables(); // Destructor
 };
 
 #endif
