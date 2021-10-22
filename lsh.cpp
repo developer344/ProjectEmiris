@@ -86,34 +86,35 @@ int main(int argc, char **argv)
     }
 
     vector<Point *> points;
-    for (const auto &i : inputLines)
-        cout << i << endl;
+    // for (const auto &i : inputLines)
+    //     cout << i << endl;
 
-    std::ofstream out(outputFileName);
+    // std::ofstream out(outputFileName);
     //std::streambuf *coutbuf = std::cout.rdbuf(); //save old buf
-    std::cout.rdbuf(out.rdbuf()); //redirect std::cout to out.txt!
+    // std::cout.rdbuf(out.rdbuf()); //redirect std::cout to out.txt!
     int numOfPoints = inputLines.size();
+    int dimension = 0;
 
     for (int i = 0; i < numOfPoints; i++)
     {
         // separate string by Tabs
         // pick every element from 2nd to endl
         //read point coordinates
-        PointPtr p = new Point;
+        PointPtr currPoint = new Point;
         string word = "";
-        int firstElem = 0;
+        dimension = 0;
         for (char x : inputLines[i])
         {
             if (x == ' ')
             {
-                if (firstElem)
-                    p->coords.push_back(atof(word.c_str()));
+                if (dimension)
+                    currPoint->coords.push_back(atof(word.c_str()));
                 else
-                    p->id = word;
+                    currPoint->id = word;
                 // cout << word << endl;
                 word = "";
 
-                firstElem = 1;
+                dimension++;
             }
             else
             {
@@ -121,8 +122,24 @@ int main(int argc, char **argv)
             }
         }
 
-        points.push_back(p);
+        points.push_back(currPoint);
     }
+    dimension--;
+    cout << "dim" << dimension;
+
+    HashTables HashTablesObject(intL, intK, numOfPoints, dimension);
+
+    cout << "OK" << endl;
+
+    for (int i = 0; i < points.size(); i++)
+    {
+        cout << "Point" << i << endl;
+        HashTablesObject.HashTables::InsertPoint(points[i]);
+    }
+
+    cout << "OK2" << endl;
+
+    HashTablesObject.HashTables::PrintHashTables();
 
     // for (auto &i : points)
     // {
