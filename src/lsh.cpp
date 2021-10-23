@@ -21,7 +21,7 @@ int main(int argc, char **argv)
     string inputFileName = "";
     string queryFileName = "";
     string outputFileName = "";
-    int intK = 4;
+    int numberOfHyperplanes = 4; // numberOfHyperplanes
     int intL = 5;
     int numberOfNearest = 1;
     int radius = 10000;
@@ -44,8 +44,8 @@ int main(int argc, char **argv)
         }
         else if (!strcmp(argv[i], "-k"))
         {
-            intK = atoi(argv[i + 1]);
-            cout << intK << endl;
+            numberOfHyperplanes = atoi(argv[i + 1]);
+            cout << numberOfHyperplanes << endl;
         }
         else if (!strcmp(argv[i], "-L"))
         {
@@ -85,12 +85,12 @@ int main(int argc, char **argv)
         inputLines.push_back(line);
     }
 
-    vector<Point *> points;
+    vector<Point *> inputPoints;
     // for (const auto &i : inputLines)
     //     cout << i << endl;
 
     // std::ofstream out(outputFileName);
-    //std::streambuf *coutbuf = std::cout.rdbuf(); //save old buf
+    // std::streambuf *coutbuf = std::cout.rdbuf(); //save old buf
     // std::cout.rdbuf(out.rdbuf()); //redirect std::cout to out.txt!
     int numOfPoints = inputLines.size();
     int dimension = 0;
@@ -99,7 +99,7 @@ int main(int argc, char **argv)
     {
         // separate string by Tabs
         // pick every element from 2nd to endl
-        //read point coordinates
+        // read point coordinates
         PointPtr currPoint = new Point;
         string word = "";
         dimension = 0;
@@ -122,33 +122,100 @@ int main(int argc, char **argv)
             }
         }
 
-        points.push_back(currPoint);
+        inputPoints.push_back(currPoint);
     }
+    inputFile.close();
     dimension--;
     cout << "dim" << dimension;
 
-    HashTables HashTablesObject(intL, intK, numOfPoints, dimension);
+    HashTables HashTablesObject(intL, numberOfHyperplanes, numOfPoints, dimension);
 
-    cout << "OK" << endl;
-
-    for (int i = 0; i < points.size(); i++)
+    for (int i = 0; i < inputPoints.size(); i++)
     {
-        cout << "Point" << i << endl;
-        HashTablesObject.HashTables::InsertPoint(points[i]);
+        //    cout << "Point" << i << endl;
+        HashTablesObject.HashTables::InsertPoint(inputPoints[i]);
     }
 
-    cout << "OK2" << endl;
+    // HashTablesObject.HashTables::PrintHashTables();
 
-    HashTablesObject.HashTables::PrintHashTables();
+    fstream queryFile;
+    queryFile.open(queryFileName, ios::in);
+    if (!queryFile.is_open())
+    {
+        cerr << "Could not open the file: '"
+             << queryFileName << "'"
+             << endl;
+        return EXIT_FAILURE;
+    }
+    vector<string> queryLines;
+    // string line;
+    while (getline(queryFile, line))
+    {
+        queryLines.push_back(line);
+    }
 
-    // for (auto &i : points)
-    // {
-    //     cout << i.id << endl;
-    //     for (auto &j : i.coords)
-    //         cout << j << " ";
-    //     cout << endl;
-    // }
+    vector<PointPtr> queryPoints;
 
-    inputFile.close();
+    for (int i = 0; i < queryLines.size(); i++)
+    {
+        // separate string by Spaces
+        // pick every element from 2nd to endl
+        // read point coordinates
+        PointPtr currPoint = new Point;
+        string word = "";
+        for (char x : queryLines[i])
+        {
+            if (x == ' ')
+            {
+                if (dimension)
+                    currPoint->coords.push_back(atof(word.c_str()));
+                else
+                    currPoint->id = word;
+                word = "";
+
+                dimension++;
+            }
+            else
+            {
+                word = word + x;
+            }
+        }
+
+        queryPoints.push_back(currPoint);
+    }
+
+    vector<PointPtr> k_nearest_points;
+    k_nearest_points.resize(numberOfHyperplanes);
+    // for (int i = 0; i < numberOfHyperplanes; i++)
+    //     k_nearest_points[i] = NULL;
+
+    vector<double> k_nearest_dist;
+    k_nearest_points.resize(numberOfHyperplanes);
+    // for (int i = 0; i < numberOfHyperplanes; i++)
+    //     k_nearest_dist[i] = BIGM; // initialize distance with a very big value
+
+    for (int i = 0; i < queryLines.size(); i++)
+    {
+
+        HashTablesObject.HashTables::k_nearest_neighbours(queryPoints[i], numberOfHyperplanes);
+
+        for (int i = 0; i < numberOfHyperplanes; i++)
+            k_nearest_points[i] = NULL;
+
+        for (int i = 0; i < numberOfHyperplanes; i++)
+            k_nearest_dist[i] = BIGM; // initialize distance with a very big value
+
+        for (int j = 0; j < intL; i++)
+        {
+
+            for (int k = 0; k < 10; k++) // for each item p in bucket gi(q)
+            {
+            }
+        }
+    }
+
+    queryFile.close();
     return EXIT_SUCCESS;
 }
+
+// querypoints na einai vector apo PointPtr pou na exei ola ta poitns tous queryFile
