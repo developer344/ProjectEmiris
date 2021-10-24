@@ -33,23 +33,27 @@ double euclideanDistance(PointPtr x, PointPtr y, int dimension)
     return sqrt(dist);
 }
 
-void sort_neighbours(vector<double> k_nearest_dist, vector<PointPtr> k_nearest_points) // sort distance in a vector of k distances
+void sort_neighbours(kNeighboursPtr k_nearest_neighbours, int k_neighbours) // sort distance in a vector of k distances
 {
-    int k = k_nearest_points.size(); // number of neighbours
-    double tempDist;
-    PointPtr tempPoint;
+    int k = k_neighbours; // number of neighbours
+    NeighbourPtr tempNeighbour;
 
-    for (int i = k - 1; i > 1; i--)
+    for (int i = k - 1; i > 0; i--)
     {
-        if (k_nearest_dist[i] < k_nearest_dist[i - 1])
+        if (k_nearest_neighbours->neighbours[i]->dist < k_nearest_neighbours->neighbours[i - 1]->dist)
         {
-            tempDist = k_nearest_dist[i - 1];
-            k_nearest_dist[i - 1] = k_nearest_dist[i];
-            k_nearest_dist[i] = tempDist;
-
-            tempPoint = k_nearest_points[i - 1];
-            k_nearest_points[i - 1] = k_nearest_points[i];
-            k_nearest_points[i] = tempPoint;
+            tempNeighbour = k_nearest_neighbours->neighbours[i - 1];
+            k_nearest_neighbours->neighbours[i - 1] = k_nearest_neighbours->neighbours[i];
+            k_nearest_neighbours->neighbours[i] = tempNeighbour;
         }
     }
+}
+
+int notAlreadyExists(kNeighboursPtr k_nearest_neighbours, string pointID)
+{
+
+    for (int i = 0; i < k_nearest_neighbours->size; i++)
+        if (k_nearest_neighbours->neighbours[i]->point->id == pointID)
+            return 0;
+    return 1;
 }

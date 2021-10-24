@@ -184,37 +184,42 @@ int main(int argc, char **argv)
         queryPoints.push_back(currPoint);
     }
 
-    vector<PointPtr> k_nearest_points;
-    k_nearest_points.resize(numberOfHyperplanes);
-    // for (int i = 0; i < numberOfHyperplanes; i++)
-    //     k_nearest_points[i] = NULL;
+    // vector<vector<Neighbour> *> k_nearest_neighbours;
+    // k_nearest_neighbours.resize(queryLines.size());
 
-    vector<double> k_nearest_dist;
-    k_nearest_points.resize(numberOfHyperplanes);
-    // for (int i = 0; i < numberOfHyperplanes; i++)
-    //     k_nearest_dist[i] = BIGM; // initialize distance with a very big value
+    vector<kNeighboursPtr> queryOutputData;
+    queryOutputData.resize(queryLines.size());
 
     for (int i = 0; i < queryLines.size(); i++)
     {
+        queryOutputData[i] = HashTablesObject.HashTables::find_k_nearest_neighbours(queryPoints[i], numberOfNearest);
+    }
+    queryFile.close();
+    cout << "After kNeighbours" << endl;
+    ofstream outputFile(outputFileName);
+    if (!outputFile.is_open())
+    {
+        cerr << "Could not open the file: '"
+             << outputFileName << "'"
+             << endl;
+        return EXIT_FAILURE;
+    }
 
-        HashTablesObject.HashTables::k_nearest_neighbours(queryPoints[i], numberOfHyperplanes);
+    for (int i = 0; i < queryLines.size(); i++)
+    {
+        outputFile << "Query: "
+                   << i << "\n";
 
-        for (int i = 0; i < numberOfHyperplanes; i++)
-            k_nearest_points[i] = NULL;
-
-        for (int i = 0; i < numberOfHyperplanes; i++)
-            k_nearest_dist[i] = BIGM; // initialize distance with a very big value
-
-        for (int j = 0; j < intL; i++)
+        for (int j = 0; j < queryOutputData[i]->size; j++)
         {
-
-            for (int k = 0; k < 10; k++) // for each item p in bucket gi(q)
-            {
-            }
+            outputFile << "Nearest-neighbour-"
+                       << j << ": " << queryOutputData[i]->neighbours[j]->point->id
+                       << "\ndistanceLSH: " << queryOutputData[i]->neighbours[j]->dist
+                       << "\ndistanceTrue: IDKLOL\n";
         }
     }
 
-    queryFile.close();
+    outputFile.close();
     return EXIT_SUCCESS;
 }
 
