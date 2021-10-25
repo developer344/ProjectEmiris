@@ -4,6 +4,8 @@
 #include <errno.h>
 #include <fstream>
 #include <vector>
+#include <chrono>
+
 #include "hashTable.h"
 
 using namespace std;
@@ -184,18 +186,39 @@ int main(int argc, char **argv)
         queryPoints.push_back(currPoint);
     }
 
-    // vector<vector<Neighbour> *> k_nearest_neighbours;
-    // k_nearest_neighbours.resize(queryLines.size());
+    vector<vector<Neighbour> *> k_nearest_neighbours;
+    k_nearest_neighbours.resize(queryLines.size());
 
     vector<kNeighboursPtr> queryOutputData;
     queryOutputData.resize(queryLines.size());
 
+    vector<kNeighboursPtr> queryTrueNeighbors;
+    queryTrueNeighbors.resize(queryLines.size());
+
+    vector<vector<PointPtr>> queryRangeSearch;
+    queryRangeSearch.resize(queryLines.size());
+
+    vector<double> tLSH;
+    tLSH.resize(queryLines.size());
+    vector<double> tTrue;
+    tTrue.resize(queryLines.size());
+
     for (int i = 0; i < queryLines.size(); i++)
     {
+        auto LSH_start = std::chrono::high_resolution_clock::now();
         queryOutputData[i] = HashTablesObject.HashTables::find_k_nearest_neighbours(queryPoints[i], numberOfNearest);
+        auto LSH_end = std::chrono::high_resolution_clock::now();
+        tLSH[i] = std::chrono::duration_cast<std::chrono::milliseconds>(LSH_end - LSH_start).count();
+
+        auto True_start = std::chrono::high_resolution_clock::now();
+        queryTrueNeighbors[i] = HashTablesObject.HashTables::find_k_true_neighbours(queryPoints[i], numberOfNearest, inputPoints);
+        auto True_end = std::chrono::high_resolution_clock::now();
+        tTrue[i] = std::chrono::duration_cast<std::chrono::milliseconds>(True_end - True_start).count();
+
+        queryRangeSearch[i] = HashTablesObject.HashTables::range_search(queryPoints[i], radius);
     }
     queryFile.close();
-    cout << "After kNeighbours" << endl;
+    // cout << "After kNeighbours" << endl;
     ofstream outputFile(outputFileName);
     if (!outputFile.is_open())
     {
@@ -215,8 +238,16 @@ int main(int argc, char **argv)
             outputFile << "Nearest-neighbour-"
                        << j << ": " << queryOutputData[i]->neighbours[j]->point->id
                        << "\ndistanceLSH: " << queryOutputData[i]->neighbours[j]->dist
-                       << "\ndistanceTrue: IDKLOL\n";
+                       << "\ndistanceTrue: " << queryTrueNeighbors[i]->neighbours[j]->dist << endl;
         }
+
+        outputFile << "tLSH: " << (double)(tLSH[i] / 1000) << 's' << endl
+                   << "tTrue: " << (double)(tTrue[i] / 1000) << 's' << endl;
+        "R-near neighbours:\n";
+        for (int j = 0; j < queryRangeSearch[i].size(); j++)
+            outputFile << queryRangeSearch[i][j]->id << endl;
+
+        outputFile << endl;
     }
 
     outputFile.close();

@@ -24,7 +24,7 @@ typedef struct PointStruct
 typedef struct BucketStruct
 {
     vector<PointPtr> points;
-    vector<int> ID;
+    vector<long int> ID;
 
 } Bucket;
 
@@ -56,6 +56,8 @@ public:
     int HashFunc(PointPtr point, int hashtableId);
     void PrintHashTables();
     kNeighboursPtr find_k_nearest_neighbours(PointPtr queryPoint, int k_neighbours);
+    kNeighboursPtr find_k_true_neighbours(PointPtr queryPoint, int k_neighbours, vector<PointPtr> inputPoints);
+    vector<PointPtr> range_search(PointPtr queryPoint, double range);
 };
 
 #endif
