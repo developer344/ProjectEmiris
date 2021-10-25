@@ -9,6 +9,7 @@ double normalDistributionGenerator(double mi = 0.0, double sigma = 1.0);
 double uniformDistributionGenerator(double alpha = 0.0, double beta = 1.0);
 int euclideanModulo(int x, int y);
 double euclideanDistance(PointPtr x, PointPtr y, int dimension);
-void sort_neighbours(vector<double> k_nearest_dist, vector<PointPtr> k_nearest_points);
+void sort_neighbours(kNeighboursPtr k_nearest_neighbours, int k_neighbours);
+int notAlreadyExists(kNeighboursPtr k_nearest_neighbours, string pointID);
 
 #endif

@@ -12,6 +12,8 @@ using namespace std;
 
 typedef struct PointStruct *PointPtr;
 typedef struct BucketStruct *BucketPtr;
+typedef struct NeighbourStruct *NeighbourPtr;
+typedef struct kNeighboursStruct *kNeighboursPtr;
 
 typedef struct PointStruct
 {
@@ -25,6 +27,18 @@ typedef struct BucketStruct
     vector<int> ID;
 
 } Bucket;
+
+typedef struct NeighbourStruct
+{
+    PointPtr point;
+    double dist;
+} Neighbour;
+
+typedef struct kNeighboursStruct
+{
+    vector<NeighbourPtr> neighbours;
+    int size; // number of requested (k) nearest neighbours
+} kNeighbours;
 
 class HashTables
 {
@@ -41,7 +55,7 @@ public:
     void InsertPoint(PointPtr point);
     int HashFunc(PointPtr point, int hashtableId);
     void PrintHashTables();
-    string k_nearest_neighbours(PointPtr queryPoint, int k_neighbours);
+    kNeighboursPtr find_k_nearest_neighbours(PointPtr queryPoint, int k_neighbours);
 };
 
 #endif

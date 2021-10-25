@@ -65,20 +65,23 @@ int HashTables::HashFunc(PointPtr point, int hashtableId)
     return euclideanModulo(h, BIGM);
 }
 
-string HashTables::k_nearest_neighbours(PointPtr queryPoint, int k_neighbours)
+kNeighboursPtr HashTables::find_k_nearest_neighbours(PointPtr queryPoint, int k_neighbours)
 {
-    PointPtr curPoint;
-    int curDist;
+    // PointPtr curPoint;
+    // int curDist;
 
-    vector<PointPtr> k_nearest_points;
-    k_nearest_points.resize(k_neighbours);
-    for (int i = 0; i < k_neighbours; i++)
-        k_nearest_points[i] = NULL;
+    NeighbourPtr currNeighbour = new Neighbour;
 
-    vector<double> k_nearest_dist;
-    k_nearest_points.resize(k_neighbours);
+    kNeighboursPtr returnData = new kNeighbours;
+    returnData->neighbours.resize(k_neighbours);
+    returnData->size = 0;
+
     for (int i = 0; i < k_neighbours; i++)
-        k_nearest_dist[i] = INT32_MAX; // initialize distance with a very big value
+    {
+        returnData->neighbours[i] = new Neighbour;
+        returnData->neighbours[i]->point = NULL;
+        returnData->neighbours[i]->dist = INT32_MAX; // initialize distance with a very big value
+    }
 
     for (int i = 0; i < this->numOfHashTables; i++) // for i from 1 to L do
     {
@@ -88,20 +91,42 @@ string HashTables::k_nearest_neighbours(PointPtr queryPoint, int k_neighbours)
         for (int j = 0; j < this->hash_tables[i][g].points.size(); j++) // for each item p in bucket gi(q) do
         {
 
-            if (this->hash_tables[i][g].ID[j] == queryID) // if p,q actually belong in same bucket
+            if (this->hash_tables[i][g].ID[j] == queryID && notAlreadyExists(returnData, this->hash_tables[i][g].points[j]->id)) // if p,q actually belong in same bucket
             {
-                curPoint = this->hash_tables[i][g].points[j];
-                curDist = euclideanDistance(queryPoint, curPoint, this->dim);
+
+                currNeighbour->point = this->hash_tables[i][g].points[j];
+                currNeighbour->dist = euclideanDistance(queryPoint, currNeighbour->point, this->dim);
                 // if dist(q,p) < db then b <- p; db <- dist(q,p)
-                if (curDist < k_nearest_dist[k_neighbours - 1])
+                if (currNeighbour->dist < returnData->neighbours[k_neighbours - 1]->dist)
                 {
-                    k_nearest_dist[k_neighbours - 1] = curDist;
-                    k_nearest_points[k_neighbours - 1] = curPoint;
-                    sort_neighbours(k_nearest_dist, k_nearest_points);
+                    if (returnData->size < k_neighbours)
+                        returnData->size++;
+                    returnData->neighbours[k_neighbours - 1]->point = currNeighbour->point;
+                    returnData->neighbours[k_neighbours - 1]->dist = currNeighbour->dist;
+
+                    cout << "BEFORE SORT" << endl;
+                    for (int z = 0; z < k_neighbours; z++)
+                    {
+                        cout << returnData->neighbours[z]->dist
+                             << " ";
+                    }
+                    cout << endl;
+
+                    sort_neighbours(returnData, k_neighbours);
+
+                    cout << "AFTER SORT" << endl;
+                    for (int z = 0; z < k_neighbours; z++)
+                    {
+                        cout << returnData->neighbours[z]->dist
+                             << " ";
+                    }
+                    cout << endl;
                 }
             }
         }
     }
+    // delete currNeighbour;
+    return returnData;
 }
 
 void HashTables::PrintHashTables()
