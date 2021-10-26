@@ -7,7 +7,7 @@
 #include <random>
 
 #define BIGM (4294967291)
-#define W (4)
+#define W (3)
 using namespace std;
 
 typedef struct PointStruct *PointPtr;

@@ -5,7 +5,8 @@
 #include <algorithm> //std::find
 
 #include "hashTable.h"
-#include "randomGenerators.h"
+#include "mathUtils.h"
+#include "lshUtils.h"
 
 using namespace std;
 
@@ -15,7 +16,7 @@ HashTables::HashTables(int L, int numberOfHyperplanes, int numberOfPoints, int d
     this->numOfHashTables = L;
     this->numberOfHyperplanes = numberOfHyperplanes;
     this->numberOfPoints = numberOfPoints;
-    this->TableSize = numberOfPoints / 4;
+    this->TableSize = numberOfPoints / 2;
 
     this->dim = dimension;
     this->hash_tables.resize(L);
@@ -37,7 +38,7 @@ HashTables::HashTables(int L, int numberOfHyperplanes, int numberOfPoints, int d
         for (int j = 0; j < numberOfHyperplanes; j++)
         {
             this->t[i][j] = uniformDistributionGenerator(0.0, W * 1.0);
-            this->ri[i][j] = rand() % 100 + 1;
+            this->ri[i][j] = rand() % 2000 - 1000;
             this->v[i][j].resize(this->dim);
             for (int l = 0; l < this->dim; l++)
                 this->v[i][j][l] = normalDistributionGenerator(0.0, 1.0);
@@ -53,24 +54,32 @@ void HashTables::InsertPoint(PointPtr point)
         int id = HashFunc(point, i);
         this->hash_tables[i][euclideanModulo(id, this->TableSize)].ID.push_back(id);
         this->hash_tables[i][euclideanModulo(id, this->TableSize)].points.push_back(point);
+
+        //(r1h1 + r2h2 + r3h3 + r4h4 + r5h5) % m = ((r1h1 % m) + (r2h2 % m) + (r3h3 % m) + (r4h4 % m) + (r5h5 % m)) % m
+        // = = = ( ((r1%m * h1%m)) % m + ... + ((r5%m * h5%m)) % m ) % m
+        //
     }
 }
 
 int HashTables::HashFunc(PointPtr point, int hashtableId)
 {
     int h;
+    int hri = 0;
     for (int i = 0; i < numberOfHyperplanes; i++)
     {
-        h += this->ri[hashtableId][i] * floor((inner_product(point->coords.begin(), point->coords.end(), this->v[hashtableId][i].begin(), 0) + this->t[hashtableId][i]) / W);
+        // hri += this->ri[hashtableId][i] * floor((inner_product(point->coords.begin(), point->coords.end(), this->v[hashtableId][i].begin(), 0) + this->t[hashtableId][i]) / W);
+        h = floor((inner_product(point->coords.begin(), point->coords.end(), this->v[hashtableId][i].begin(), 0) + this->t[hashtableId][i]) / W);
+
+        hri += avoidOverFlowModulo(this->ri[hashtableId][i], h, BIGM, '*');
     }
-    return euclideanModulo(h, BIGM);
+    return euclideanModulo(hri, BIGM);
 }
 
 kNeighboursPtr HashTables::find_k_nearest_neighbours(PointPtr queryPoint, int k_neighbours)
 {
     // PointPtr curPoint;
     // int curDist;
-
+    int count = 0;
     NeighbourPtr currNeighbour = new Neighbour;
 
     kNeighboursPtr returnData = new kNeighbours;
@@ -105,6 +114,7 @@ kNeighboursPtr HashTables::find_k_nearest_neighbours(PointPtr queryPoint, int k_
                     returnData->neighbours[k_neighbours - 1]->point = currNeighbour->point;
                     returnData->neighbours[k_neighbours - 1]->dist = currNeighbour->dist;
 
+                    count++;
                     // cout << "BEFORE SORT" << endl;
                     // for (int z = 0; z < k_neighbours; z++)
                     // {
@@ -124,13 +134,13 @@ kNeighboursPtr HashTables::find_k_nearest_neighbours(PointPtr queryPoint, int k_
                     // cout << endl;
                 }
             }
+            if (count > 20 * numOfHashTables)
+                return returnData;
         }
     }
     // delete currNeighbour;
     return returnData;
 }
-
-
 
 vector<PointPtr> HashTables::range_search(PointPtr queryPoint, double range)
 {

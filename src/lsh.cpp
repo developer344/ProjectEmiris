@@ -7,77 +7,85 @@
 #include <chrono>
 
 #include "hashTable.h"
-#include "randomGenerators.h"
+#include "mathUtils.h"
+#include "lshUtils.h"
 
 using namespace std;
 
 int main(int argc, char **argv)
 {
     //./lsh–i<inputfile> –q<queryfile> –k<int> -L<int> -ο<outputfile> -Ν<numberofnearest> -R<radius>
-    if (!(argc % 2) || argc > 15 || argc < 7)
-    {
-        cerr << "Incorrect format of arguments"
-             << endl;
-        return EXIT_FAILURE;
-    }
+    // if (!(argc % 2) || argc > 15 || argc < 7)
+    // {
+    //     cerr << "Incorrect format of arguments"
+    //          << endl;
+    //     return EXIT_FAILURE;
+    // }
 
-    string inputFileName = "";
-    string queryFileName = "";
-    string outputFileName = "";
-    int numberOfHyperplanes = 4; // numberOfHyperplanes
-    int intL = 5;
-    int numberOfNearest = 1;
-    int radius = 10000;
+    inputData LSHData;
+    LSHData.inputFileName = "";
+    LSHData.queryFileName = "";
+    LSHData.outputFileName = "";
+    LSHData.numberOfHyperplanes = 4;
+    LSHData.intL = 5;
+    LSHData.numberOfNearest = 1;
+    LSHData.radius = 500;
+    LSHData.dimension = 0;
+    int distance_true_visible = 0;
 
     for (int i = 0; i < argc; i++)
         if (!strcmp(argv[i], "-i"))
         {
-            inputFileName = string(argv[i + 1]);
-            cout << inputFileName << endl;
+            LSHData.inputFileName = string(argv[i + 1]);
+            cout << LSHData.inputFileName << endl;
         }
         else if (!strcmp(argv[i], "-q"))
         {
-            queryFileName = string(argv[i + 1]);
-            cout << queryFileName << endl;
+            LSHData.queryFileName = string(argv[i + 1]);
+            cout << LSHData.queryFileName << endl;
         }
         else if (!strcmp(argv[i], "-o"))
         {
-            outputFileName = string(argv[i + 1]);
-            cout << outputFileName << endl;
+            LSHData.outputFileName = string(argv[i + 1]);
+            cout << LSHData.outputFileName << endl;
         }
         else if (!strcmp(argv[i], "-k"))
         {
-            numberOfHyperplanes = atoi(argv[i + 1]);
-            cout << numberOfHyperplanes << endl;
+            LSHData.numberOfHyperplanes = atoi(argv[i + 1]);
+            cout << LSHData.numberOfHyperplanes << endl;
         }
         else if (!strcmp(argv[i], "-L"))
         {
-            intL = atoi(argv[i + 1]);
-            cout << intL << endl;
+            LSHData.intL = atoi(argv[i + 1]);
+            cout << LSHData.intL << endl;
         }
         else if (!strcmp(argv[i], "-N"))
         {
-            numberOfNearest = atoi(argv[i + 1]);
-            cout << numberOfNearest << endl;
+            LSHData.numberOfNearest = atoi(argv[i + 1]);
+            cout << LSHData.numberOfNearest << endl;
         }
         else if (!strcmp(argv[i], "-R"))
         {
-            radius = atoi(argv[i + 1]);
-            cout << radius << endl;
+            LSHData.radius = atoi(argv[i + 1]);
+            cout << LSHData.radius << endl;
+        }
+        else if (!strcmp(argv[i], "--dist-true=visible"))
+        {
+            distance_true_visible = 1;
         }
 
-    if (inputFileName.empty() || outputFileName.empty() || queryFileName.empty())
+    if (LSHData.inputFileName.empty() || LSHData.outputFileName.empty() || LSHData.queryFileName.empty())
     {
         cerr << "Arguments must contain all input file, output file and query file. The rest of the arguments are optional"
              << endl;
         return EXIT_FAILURE;
     }
     fstream inputFile;
-    inputFile.open(inputFileName, ios::in);
+    inputFile.open(LSHData.inputFileName, ios::in);
     if (!inputFile.is_open())
     {
         cerr << "Could not open the file: '"
-             << inputFileName << "'"
+             << LSHData.inputFileName << "'"
              << endl;
         return EXIT_FAILURE;
     }
@@ -129,9 +137,10 @@ int main(int argc, char **argv)
     }
     inputFile.close();
     dimension--;
+    LSHData.dimension = dimension;
     cout << "dim" << dimension;
 
-    HashTables HashTablesObject(intL, numberOfHyperplanes, numOfPoints, dimension);
+    HashTables HashTablesObject(LSHData.intL, LSHData.numberOfHyperplanes, numOfPoints, LSHData.dimension);
 
     for (int i = 0; i < inputPoints.size(); i++)
     {
@@ -142,11 +151,11 @@ int main(int argc, char **argv)
     // HashTablesObject.HashTables::PrintHashTables();
 
     fstream queryFile;
-    queryFile.open(queryFileName, ios::in);
+    queryFile.open(LSHData.queryFileName, ios::in);
     if (!queryFile.is_open())
     {
         cerr << "Could not open the file: '"
-             << queryFileName << "'"
+             << LSHData.queryFileName << "'"
              << endl;
         return EXIT_FAILURE;
     }
@@ -205,28 +214,29 @@ int main(int argc, char **argv)
     tLSH.resize(queryLines.size());
     vector<double> tTrue;
     tTrue.resize(queryLines.size());
-
+    cout << "Starting methods" << endl;
     for (int i = 0; i < queryLines.size(); i++)
     {
+        cout << i << endl;
         auto LSH_start = std::chrono::high_resolution_clock::now();
-        queryOutputData[i] = HashTablesObject.HashTables::find_k_nearest_neighbours(queryPoints[i], numberOfNearest);
+        queryOutputData[i] = HashTablesObject.HashTables::find_k_nearest_neighbours(queryPoints[i], LSHData.numberOfNearest);
         auto LSH_end = std::chrono::high_resolution_clock::now();
         tLSH[i] = std::chrono::duration_cast<std::chrono::milliseconds>(LSH_end - LSH_start).count();
 
         auto True_start = std::chrono::high_resolution_clock::now();
-        queryTrueNeighbors[i] = find_k_true_neighbours(queryPoints[i], numberOfNearest, inputPoints, dimension);
+        queryTrueNeighbors[i] = find_k_true_neighbours(queryPoints[i], LSHData.numberOfNearest, inputPoints, LSHData.dimension);
         auto True_end = std::chrono::high_resolution_clock::now();
         tTrue[i] = std::chrono::duration_cast<std::chrono::milliseconds>(True_end - True_start).count();
 
-        queryRangeSearch[i] = HashTablesObject.HashTables::range_search(queryPoints[i], radius);
+        queryRangeSearch[i] = HashTablesObject.HashTables::range_search(queryPoints[i], LSHData.radius);
     }
     queryFile.close();
     // cout << "After kNeighbours" << endl;
-    ofstream outputFile(outputFileName);
+    ofstream outputFile(LSHData.outputFileName);
     if (!outputFile.is_open())
     {
         cerr << "Could not open the file: '"
-             << outputFileName << "'"
+             << LSHData.outputFileName << "'"
              << endl;
         return EXIT_FAILURE;
     }
@@ -234,23 +244,29 @@ int main(int argc, char **argv)
     for (int i = 0; i < queryLines.size(); i++)
     {
         outputFile << "Query: "
-                   << i << "\n";
+                   << queryPoints[i]->id << endl;
 
         for (int j = 0; j < queryOutputData[i]->size; j++)
         {
-            outputFile << "Nearest-neighbour-"
-                       << j << ": " << queryOutputData[i]->neighbours[j]->point->id
-                       << "\ndistanceLSH: " << queryOutputData[i]->neighbours[j]->dist
-                       << "\ndistanceTrue: " << queryTrueNeighbors[i]->neighbours[j]->dist << endl;
+            outputFile << "Nearest neighbor-"
+                       << j + 1 << ": " << queryOutputData[i]->neighbours[j]->point->id << endl
+                       << "distanceLSH: " << queryOutputData[i]->neighbours[j]->dist << endl;
+            if (distance_true_visible)
+            {
+                outputFile << "True Nearest neighbor-"
+                           << j + 1 << ": " << queryTrueNeighbors[i]->neighbours[j]->point->id << endl;
+            }
+            outputFile << "distanceTrue: " << queryTrueNeighbors[i]->neighbours[j]->dist << endl;
         }
 
         outputFile << "tLSH: " << (double)(tLSH[i] / 1000) << 's' << endl
-                   << "tTrue: " << (double)(tTrue[i] / 1000) << 's' << endl;
-        "R-near neighbours:\n";
+                   << "tTrue: " << (double)(tTrue[i] / 1000) << 's' << endl
+                   << "R-near neighbors:" << endl;
         for (int j = 0; j < queryRangeSearch[i].size(); j++)
             outputFile << queryRangeSearch[i][j]->id << endl;
 
-        outputFile << endl;
+        outputFile << endl
+                   << endl;
     }
 
     outputFile.close();
