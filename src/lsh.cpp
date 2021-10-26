@@ -7,6 +7,7 @@
 #include <chrono>
 
 #include "hashTable.h"
+#include "randomGenerators.h"
 
 using namespace std;
 
@@ -158,6 +159,7 @@ int main(int argc, char **argv)
 
     vector<PointPtr> queryPoints;
 
+    dimension = 0;
     for (int i = 0; i < queryLines.size(); i++)
     {
         // separate string by Spaces
@@ -165,6 +167,7 @@ int main(int argc, char **argv)
         // read point coordinates
         PointPtr currPoint = new Point;
         string word = "";
+        dimension = 0;
         for (char x : queryLines[i])
         {
             if (x == ' ')
@@ -211,7 +214,7 @@ int main(int argc, char **argv)
         tLSH[i] = std::chrono::duration_cast<std::chrono::milliseconds>(LSH_end - LSH_start).count();
 
         auto True_start = std::chrono::high_resolution_clock::now();
-        queryTrueNeighbors[i] = HashTablesObject.HashTables::find_k_true_neighbours(queryPoints[i], numberOfNearest, inputPoints);
+        queryTrueNeighbors[i] = find_k_true_neighbours(queryPoints[i], numberOfNearest, inputPoints, dimension);
         auto True_end = std::chrono::high_resolution_clock::now();
         tTrue[i] = std::chrono::duration_cast<std::chrono::milliseconds>(True_end - True_start).count();
 
