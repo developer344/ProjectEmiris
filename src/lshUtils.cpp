@@ -16,6 +16,21 @@ void sort_neighbours(kNeighboursPtr k_nearest_neighbours, int k_neighbours) // s
     }
 }
 
+void sort_points(vector<PointPtr> *Data) // sort distance in a vector of k distances
+{
+    int k = Data->size();
+    PointPtr tempPoint;
+    for (int i = k - 1; i > 0; i--)
+    {
+        if ((*Data)[i]->id < (*Data)[i - 1]->id)
+        {
+            tempPoint = (*Data)[i];
+            (*Data)[i] = (*Data)[i - 1];
+            (*Data)[i - 1] = tempPoint;
+        }
+    }
+}
+
 int notAlreadyExists(kNeighboursPtr k_nearest_neighbours, string pointID)
 {
 
@@ -61,6 +76,6 @@ kNeighboursPtr find_k_true_neighbours(PointPtr queryPoint, int k_neighbours, vec
         }
     }
 
-    // delete currNeighbour;
+    delete currNeighbour;
     return returnData;
 }

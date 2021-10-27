@@ -40,6 +40,15 @@ typedef struct kNeighboursStruct
     int size; // number of requested (k) nearest neighbours
 } kNeighbours;
 
+struct BY_ID
+{
+    // Source: https://stackoverflow.com/questions/2999135/how-can-i-sort-the-vector-elements-using-members-as-the-key-in-c
+    bool operator()(PointPtr const &a, PointPtr const &b) const
+    {
+        return a->id < b->id;
+    }
+};
+
 class HashTables
 {
 private:

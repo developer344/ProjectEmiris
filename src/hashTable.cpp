@@ -24,13 +24,9 @@ HashTables::HashTables(int L, int numberOfHyperplanes, int numberOfPoints, int d
     this->ri.resize(L);
     this->v.resize(L);
 
-    cout << "Number of hash tables" << this->hash_tables.size() << endl;
     for (int i = 0; i < L; i++)
     {
         this->hash_tables[i].resize(this->TableSize);
-        cout << "Number of buckets in hash table "
-             << i << " is "
-             << this->hash_tables[i].size() << endl;
         this->t[i].resize(numberOfHyperplanes);
         this->ri[i].resize(numberOfHyperplanes);
         this->v[i].resize(numberOfHyperplanes);
@@ -115,30 +111,56 @@ kNeighboursPtr HashTables::find_k_nearest_neighbours(PointPtr queryPoint, int k_
                     returnData->neighbours[k_neighbours - 1]->dist = currNeighbour->dist;
 
                     count++;
-                    // cout << "BEFORE SORT" << endl;
-                    // for (int z = 0; z < k_neighbours; z++)
-                    // {
-                    //     cout << returnData->neighbours[z]->dist
-                    //          << " ";
-                    // }
-                    // cout << endl;
 
                     sort_neighbours(returnData, k_neighbours);
-
-                    // cout << "AFTER SORT" << endl;
-                    // for (int z = 0; z < k_neighbours; z++)
-                    // {
-                    //     cout << returnData->neighbours[z]->dist
-                    //          << " ";
-                    // }
-                    // cout << endl;
                 }
             }
             if (count > 20 * numOfHashTables)
+            {
+                delete currNeighbour;
                 return returnData;
+            }
         }
     }
-    // delete currNeighbour;
+
+    if (returnData->size < k_neighbours)
+    { // rerun without ID check if haven't found enough neighbors
+
+        for (int i = 0; i < this->numOfHashTables; i++) // for i from 1 to L do
+        {
+            int queryID = this->HashFunc(queryPoint, i);
+            int g = euclideanModulo(queryID, this->TableSize);
+
+            for (int j = 0; j < this->hash_tables[i][g].points.size(); j++) // for each item p in bucket gi(q) do
+            {
+
+                if (this->hash_tables[i][g].ID[j] != queryID && notAlreadyExists(returnData, this->hash_tables[i][g].points[j]->id)) // if p,q actually belong in same bucket
+                {
+
+                    currNeighbour->point = this->hash_tables[i][g].points[j];
+                    currNeighbour->dist = euclideanDistance(queryPoint, currNeighbour->point, this->dim);
+                    // if dist(q,p) < db then b <- p; db <- dist(q,p)
+                    if (currNeighbour->dist < returnData->neighbours[k_neighbours - 1]->dist)
+                    {
+                        if (returnData->size < k_neighbours)
+                            returnData->size++;
+                        returnData->neighbours[k_neighbours - 1]->point = currNeighbour->point;
+                        returnData->neighbours[k_neighbours - 1]->dist = currNeighbour->dist;
+
+                        count++;
+
+                        sort_neighbours(returnData, k_neighbours);
+                    }
+                }
+                if (count > 10 * numOfHashTables)
+                {
+                    delete currNeighbour;
+                    return returnData;
+                }
+            }
+        }
+    }
+    delete currNeighbour;
     return returnData;
 }
 
@@ -147,73 +169,31 @@ vector<PointPtr> HashTables::range_search(PointPtr queryPoint, double range)
 
     NeighbourPtr currNeighbour = new Neighbour;
 
-    // kNeighboursPtr returnData = new kNeighbours;
-
     vector<PointPtr> returnData;
-    //returnData->neighbours.resize(k_neighbours);
-    //returnData->size = 0;
-
-    // for (int i = 0; i < k_neighbours; i++)
-    // {
-    //     returnData->neighbours[i] = new Neighbour;
-    //     returnData->neighbours[i]->point = NULL;
-    //     returnData->neighbours[i]->dist = INT32_MAX; // initialize distance with a very big value
-    // }
 
     for (int i = 0; i < this->numOfHashTables; i++) // for i from 1 to L do
     {
         int queryID = this->HashFunc(queryPoint, i);
         int g = euclideanModulo(queryID, this->TableSize);
-
         for (int j = 0; j < this->hash_tables[i][g].points.size(); j++) // for each item p in bucket gi(q) do
         {
+            bool found = binary_search(returnData.begin(), returnData.end(), this->hash_tables[i][g].points[j], BY_ID());
 
-            // if (this->hash_tables[i][g].ID[j] == queryID && (find(returnData.begin(), returnData.end(), this->hash_tables[i][g].points[j]) == returnData.end())) // if p,q actually belong in same bucket - test with ID(p)
-            // {
-            if (find(returnData.begin(), returnData.end(), this->hash_tables[i][g].points[j]) == returnData.end())
+            if (!found)
             {
 
                 currNeighbour->point = this->hash_tables[i][g].points[j];
                 currNeighbour->dist = euclideanDistance(queryPoint, currNeighbour->point, this->dim);
-                // if dist(q,p) < range then add
 
                 if (currNeighbour->dist < range)
                 {
-                    PointPtr tempPoint = new Point;
-                    tempPoint = currNeighbour->point;
-                    returnData.push_back(tempPoint);
+                    returnData.push_back(this->hash_tables[i][g].points[j]);
+                    sort_points(&returnData);
                 }
-
-                // // if dist(q,p) < db then b <- p; db <- dist(q,p)
-                // if (currNeighbour->dist < returnData->neighbours[k_neighbours - 1]->dist)
-                // {
-                //     if (returnData->size < k_neighbours)
-                //         returnData->size++;
-                //     returnData->neighbours[k_neighbours - 1]->point = currNeighbour->point;
-                //     returnData->neighbours[k_neighbours - 1]->dist = currNeighbour->dist;
-
-                //     cout << "BEFORE SORT" << endl;
-                //     for (int z = 0; z < k_neighbours; z++)
-                //     {
-                //         cout << returnData->neighbours[z]->dist
-                //              << " ";
-                //     }
-                //     cout << endl;
-
-                //     sort_neighbours(returnData, k_neighbours);
-
-                //     cout << "AFTER SORT" << endl;
-                //     for (int z = 0; z < k_neighbours; z++)
-                //     {
-                //         cout << returnData->neighbours[z]->dist
-                //              << " ";
-                //     }
-                //     cout << endl;
-                // }
             }
         }
     }
-    // delete currNeighbour;
+    delete currNeighbour;
     return returnData;
 }
 

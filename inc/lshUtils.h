@@ -18,6 +18,7 @@ typedef struct inputDataStruct
 } inputData;
 
 void sort_neighbours(kNeighboursPtr k_nearest_neighbours, int k_neighbours);
+void sort_points(vector<PointPtr> *Data);
 int notAlreadyExists(kNeighboursPtr k_nearest_neighbours, string pointID);
 kNeighboursPtr find_k_true_neighbours(PointPtr queryPoint, int k_neighbours, vector<PointPtr> inputPoints, int dim);
 

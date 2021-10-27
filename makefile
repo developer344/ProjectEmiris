@@ -1,6 +1,6 @@
 INC=./inc
 SRC=./src
-CCFLAGS=-lm
+CCFLAGS=-lm -g
 
 TARGETS = lsh.out
 
