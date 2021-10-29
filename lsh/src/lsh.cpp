@@ -162,7 +162,7 @@ int main(int argc, char **argv)
             if (word == "")
                 std::cout << "Using Default Value of radius = " << LSHData.radius << endl;
             else
-                LSHData.numberOfHyperplanes = stoi(word);
+                LSHData.radius = stoi(word);
         }
 
         if (LSHData.inputFileName.empty() || LSHData.outputFileName.empty() || LSHData.queryFileName.empty())
