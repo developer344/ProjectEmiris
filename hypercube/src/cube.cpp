@@ -8,6 +8,15 @@
 #include <algorithm>
 #include <climits>
 
+#include "hypercubeUtils.h"
+#include "mathUtils.h"
+
+#define DEF_K 14
+#define DEF_M 10
+#define DEF_PROBES 2
+#define DEF_N 1
+#define DEF_R 500
+
 using namespace std;
 
 int main(int argc, char **argv)
@@ -19,7 +28,7 @@ int main(int argc, char **argv)
                   << std::endl
                   << "STARTING" << std::endl;
         vector<std::string> found;
-        inputData LSHData;
+        inputData HCData;
         bool distance_true_visible = false;
 
         for (int i = 0; i < argc; i++)
@@ -27,44 +36,50 @@ int main(int argc, char **argv)
 
             if (std::string(argv[i]) == "-i")
             {
-                LSHData.inputFileName = std::string(argv[i + 1]);
-                std::cout << LSHData.inputFileName << std::endl;
+                HCData.inputFileName = std::string(argv[i + 1]);
+                std::cout << HCData.inputFileName << std::endl;
                 found.push_back("inputFile");
             }
             else if (std::string(argv[i]) == "-q")
             {
-                LSHData.queryFileName = std::string(argv[i + 1]);
-                std::cout << LSHData.queryFileName << std::endl;
+                HCData.queryFileName = std::string(argv[i + 1]);
+                std::cout << HCData.queryFileName << std::endl;
                 found.push_back("queryFile");
             }
             else if (std::string(argv[i]) == "-o")
             {
-                LSHData.outputFileName = std::string(argv[i + 1]);
-                std::cout << LSHData.outputFileName << std::endl;
+                HCData.outputFileName = std::string(argv[i + 1]);
+                std::cout << HCData.outputFileName << std::endl;
                 found.push_back("outputFile");
             }
             else if (std::string(argv[i]) == "-k")
             {
-                LSHData.numberOfHyperplanes = atoi(argv[i + 1]);
-                std::cout << LSHData.numberOfHyperplanes << std::endl;
+                HCData.projectionDimension = atoi(argv[i + 1]);
+                std::cout << HCData.projectionDimension << std::endl;
                 found.push_back("k");
             }
-            else if (std::string(argv[i]) == "-L")
+            else if (std::string(argv[i]) == "-M")
             {
-                LSHData.intL = atoi(argv[i + 1]);
-                std::cout << LSHData.intL << std::endl;
-                found.push_back("l");
+                HCData.maxCandidatePoints = atoi(argv[i + 1]);
+                std::cout << HCData.maxCandidatePoints << std::endl;
+                found.push_back("m");
             }
             else if (std::string(argv[i]) == "-N")
             {
-                LSHData.numberOfNearest = atoi(argv[i + 1]);
-                std::cout << LSHData.numberOfNearest << std::endl;
+                HCData.numberOfNearest = atoi(argv[i + 1]);
+                std::cout << HCData.numberOfNearest << std::endl;
                 found.push_back("n");
+            }
+            else if (std::string(argv[i]) == "-probes")
+            {
+                HCData.probes = atoi(argv[i + 1]);
+                std::cout << HCData.probes << std::endl;
+                found.push_back("probes");
             }
             else if (std::string(argv[i]) == "-R")
             {
-                LSHData.radius = atoi(argv[i + 1]);
-                std::cout << LSHData.radius << std::endl;
+                HCData.radius = atoi(argv[i + 1]);
+                std::cout << HCData.radius << std::endl;
                 found.push_back("r");
             }
             else if (std::string(argv[i]) == "--dist-true=visible")
@@ -89,7 +104,7 @@ int main(int argc, char **argv)
 
             while ((ch = getchar()) != '\n')
                 word += ch;
-            LSHData.inputFileName = word;
+            HCData.inputFileName = word;
         }
         if (std::find(found.begin(), found.end(), "queryFile") == found.end()) // if not found queryFile
         {
@@ -97,7 +112,7 @@ int main(int argc, char **argv)
 
             while ((ch = getchar()) != '\n')
                 word += ch;
-            LSHData.queryFileName = word;
+            HCData.queryFileName = word;
         }
         if (std::find(found.begin(), found.end(), "outputFile") == found.end()) // if not found outputFile
         {
@@ -105,55 +120,192 @@ int main(int argc, char **argv)
 
             while ((ch = getchar()) != '\n')
                 word += ch;
-            LSHData.outputFileName = word;
+            HCData.outputFileName = word;
         }
         if (std::find(found.begin(), found.end(), "k") == found.end()) // if not found inputFile
         {
             std::cout << "Please give k: Press [ENTER] for default value or type the desired value." << std::endl;
-            LSHData.numberOfHyperplanes = DEF_K;
+            HCData.projectionDimension = DEF_K;
             word = "";
             while ((ch = getchar()) != '\n')
                 word += ch;
             if (word == "")
-                std::cout << "Using Default Value of k = " << LSHData.numberOfHyperplanes << endl;
+                std::cout << "Using Default Value of k = " << HCData.projectionDimension << endl;
             else
-                LSHData.numberOfHyperplanes = stoi(word);
+                HCData.projectionDimension = stoi(word);
         }
-        if (std::find(found.begin(), found.end(), "l") == found.end()) // if not found inputFile
+        if (std::find(found.begin(), found.end(), "m") == found.end()) // if not found inputFile
         {
-            std::cout << "Please give L: Press [ENTER] for default value or type the desired value." << std::endl;
-            LSHData.intL = DEF_L;
+            std::cout << "Please give M: Press [ENTER] for default value or type the desired value." << std::endl;
+            HCData.maxCandidatePoints = DEF_M;
             word = "";
             while ((ch = getchar()) != '\n')
                 word += ch;
             if (word == "")
-                std::cout << "Using Default Value of L = " << LSHData.intL << endl;
+                std::cout << "Using Default Value of M = " << HCData.maxCandidatePoints << endl;
             else
-                LSHData.intL = stoi(word);
+                HCData.maxCandidatePoints = stoi(word);
+        }
+        if (std::find(found.begin(), found.end(), "probes") == found.end()) // if not found inputFile
+        {
+            std::cout << "Please give number of probes: Press [ENTER] for default value or type the desired value." << std::endl;
+            HCData.probes = DEF_PROBES;
+            word = "";
+            while ((ch = getchar()) != '\n')
+                word += ch;
+            if (word == "")
+                std::cout << "Using Default Value of probes = " << HCData.probes << endl;
+            else
+                HCData.probes = stoi(word);
         }
         if (std::find(found.begin(), found.end(), "n") == found.end()) // if not found inputFile
         {
             std::cout << "Please give N: Press [ENTER] for default value or type the desired value." << std::endl;
-            LSHData.numberOfNearest = DEF_N;
+            HCData.numberOfNearest = DEF_N;
             word = "";
             while ((ch = getchar()) != '\n')
                 word += ch;
             if (word == "")
-                std::cout << "Using Default Value of N = " << LSHData.numberOfNearest << endl;
+                std::cout << "Using Default Value of N = " << HCData.numberOfNearest << endl;
             else
-                LSHData.numberOfNearest = stoi(word);
+                HCData.numberOfNearest = stoi(word);
         }
         if (std::find(found.begin(), found.end(), "r") == found.end()) // if not found inputFile
         {
             std::cout << "Please give R: Press [ENTER] for default value or type the desired value." << std::endl;
-            LSHData.radius = DEF_R;
+            HCData.radius = DEF_R;
             word = "";
             while ((ch = getchar()) != '\n')
                 word += ch;
             if (word == "")
-                std::cout << "Using Default Value of radius = " << LSHData.radius << endl;
+                std::cout << "Using Default Value of radius = " << HCData.radius << endl;
             else
-                LSHData.numberOfHyperplanes = stoi(word);
+                HCData.radius = stoi(word);
+        }
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////
+        if (HCData.inputFileName.empty() || HCData.outputFileName.empty() || HCData.queryFileName.empty())
+        {
+            cerr << "Arguments must contain all input file, output file and query file. The rest of the arguments are optional"
+                 << std::endl;
+            return EXIT_FAILURE;
+        }
+        ifstream inputFile;
+        inputFile.open(HCData.inputFileName, ios::in);
+        if (!inputFile.is_open())
+        {
+            cerr << "Could not open the file: '"
+                 << HCData.inputFileName << "'"
+                 << std::endl;
+            return EXIT_FAILURE;
+        }
+        cout << "Reading input file " << HCData.inputFileName << "..." << endl;
+        vector<std::string> inputLines;
+        std::string line;
+        while (getline(inputFile, line))
+        {
+            inputLines.push_back(line);
+        }
+
+        vector<PointPtr> inputPoints;
+
+        int numOfPoints = inputLines.size();
+        int dimension = 0;
+
+        for (int i = 0; i < numOfPoints; i++)
+        {
+            // separate std::string by Tabs
+            // pick every element from 2nd to std::endl
+            // read point coordinates
+            PointPtr currPoint = new Point;
+            std::string word = "";
+            dimension = 0;
+            for (char x : inputLines[i])
+            {
+                if (x == ' ')
+                {
+                    if (dimension)
+                        currPoint->coords.push_back(atof(word.c_str()));
+                    else
+                        currPoint->id = word;
+                    word = "";
+
+                    dimension++;
+                }
+                else
+                {
+                    word = word + x;
+                }
+            }
+
+            inputPoints.push_back(currPoint);
+        }
+        inputFile.close();
+        dimension--;
+        HCData.dimension = dimension;
+        std::cout << "dim" << dimension;
+        // Here insert points to Hypercube data structure when u figure out how
+        ifstream queryFile;
+        queryFile.open(HCData.queryFileName, ios::in);
+        if (!queryFile.is_open())
+        {
+            cerr << "Could not open the file: '"
+                 << HCData.queryFileName << "'"
+                 << std::endl;
+            return EXIT_FAILURE;
+        }
+
+        cout << "Reading query file " << HCData.queryFileName << "..." << endl;
+        vector<std::string> queryLines;
+        while (getline(queryFile, line))
+        {
+            queryLines.push_back(line);
+        }
+
+        vector<PointPtr> queryPoints;
+
+        dimension = 0;
+        for (int i = 0; i < queryLines.size(); i++)
+        {
+            // separate std::string by Spaces
+            // pick every element from 2nd to std::endl
+            // read point coordinates
+            PointPtr currPoint = new Point;
+            std::string word = "";
+            dimension = 0;
+            for (char x : queryLines[i])
+            {
+                if (x == ' ')
+                {
+                    if (dimension)
+                        currPoint->coords.push_back(atof(word.c_str()));
+                    else
+                        currPoint->id = word;
+                    word = "";
+
+                    dimension++;
+                }
+                else
+                {
+                    word = word + x;
+                }
+            }
+
+            queryPoints.push_back(currPoint);
+        }
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////
+        std::cout << "Rerun Program?..." << std::endl
+                  << "======Options======" << std::endl
+                  << "CONT to rerun" << std::endl
+                  << "TERM to terminate" << std::endl
+                  << "===================" << std::endl;
+        while (true)
+        {
+
+            option = "";
+            while ((ch = getchar()) != '\n')
+                option += ch;
+            if (option == "CONT" || option == "TERM")
+                break;
         }
     }
     return EXIT_SUCCESS;

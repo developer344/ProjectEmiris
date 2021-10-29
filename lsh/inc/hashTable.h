@@ -55,7 +55,7 @@ private:
     int numOfHashTables;
     int numberOfHyperplanes, numberOfPoints, TableSize, dim;
     vector<vector<Bucket>> hash_tables;
-    vector<vector<int>> ri; // r=(0-100)
+    vector<vector<int>> ri; // r=(-100,100)
     vector<vector<double>> t;
     vector<vector<vector<double>>> v;
 
