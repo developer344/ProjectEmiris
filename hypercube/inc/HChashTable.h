@@ -5,13 +5,14 @@
 #include <string>
 #include <vector>
 
-#include "mathUtils.h"
-#include "hypercubeUtils.h"
+using namespace std;
 
 #define W (3)
 
 typedef struct PointStruct *PointPtr;
 typedef struct BucketStruct *BucketPtr;
+typedef struct NeighbourStruct *NeighbourPtr;
+typedef struct kNeighboursStruct *kNeighboursPtr;
 
 typedef struct PointStruct
 {
@@ -24,6 +25,18 @@ typedef struct BucketStruct
     std::vector<PointPtr> points;
 } Bucket;
 
+typedef struct NeighbourStruct
+{
+    PointPtr point;
+    double dist;
+} Neighbour;
+
+typedef struct kNeighboursStruct
+{
+    std::vector<NeighbourPtr> neighbours;
+    int size; // number of requested (k) nearest neighbours
+} kNeighbours;
+
 class HChashTable
 {
 private:
@@ -34,16 +47,19 @@ private:
     int dimension;
     int projectionDimension;
     int probes;
-    int maxcantidatesPoints;
-    int bucketCount;
+    int maxcandidatesPoints;
+    unsigned long bucketCount;
 
 public:
     HChashTable(int dimension,
                 int projectionDimension,
                 int probes,
-                int maxcantidatesPoints);
+                int maxcandidatesPoints);
     ~HChashTable();
-    void Insert(PointPtr p);
+    void InsertPoint(PointPtr p);
+    unsigned long HashFunc(PointPtr point);
+    kNeighboursPtr find_k_nearest_neighbours(PointPtr queryPoint, int k_neighbours);
+    std::vector<unsigned long> *find_n_hamming_distance(unsigned long currBucketValue, int hammingDistance);
 };
 
 #endif

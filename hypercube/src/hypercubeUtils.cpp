@@ -1,4 +1,9 @@
 #include "hypercubeUtils.h"
+#include <time.h>
+#include <stdlib.h>
+#include <random>
+
+using namespace std;
 
 void sort_neighbours(kNeighboursPtr k_nearest_neighbours, int k_neighbours) // sort distance in a vector of k distances
 {
@@ -16,7 +21,7 @@ void sort_neighbours(kNeighboursPtr k_nearest_neighbours, int k_neighbours) // s
     }
 }
 
-void sort_points(vector<PointPtr> *Data) // sort distance in a vector of k distances
+void sort_points(std::vector<PointPtr> *Data) // sort distance in a vector of k distances
 {
     int k = Data->size();
     PointPtr tempPoint;
@@ -31,7 +36,7 @@ void sort_points(vector<PointPtr> *Data) // sort distance in a vector of k dista
     }
 }
 
-int notAlreadyExists(kNeighboursPtr k_nearest_neighbours, string pointID)
+int notAlreadyExists(kNeighboursPtr k_nearest_neighbours, std::string pointID)
 {
 
     for (int i = 0; i < k_nearest_neighbours->size; i++)
@@ -40,7 +45,7 @@ int notAlreadyExists(kNeighboursPtr k_nearest_neighbours, string pointID)
     return 1;
 }
 
-kNeighboursPtr find_k_true_neighbours(PointPtr queryPoint, int k_neighbours, vector<PointPtr> inputPoints, int dim)
+kNeighboursPtr find_k_true_neighbours(PointPtr queryPoint, int k_neighbours, std::vector<PointPtr> inputPoints, int dim)
 {
     // PointPtr curPoint;
     // int curDist;
@@ -81,7 +86,18 @@ kNeighboursPtr find_k_true_neighbours(PointPtr queryPoint, int k_neighbours, vec
 }
 
 // maps an integer value (h) to 0 or 1
-bool mapFunction(int h)
+bool mapFunction(int h, int i)
 {
-    return euclideanModulo(h, 2);
+    // srand(time(NULL));
+    // int ret = euclideanModulo(h, rand() % 100);
+    // if (i % 2 == 0)
+    // {
+    //     return ret > rand() % 50 ? true : false;
+    // }
+    // else
+    //     return ret <= rand() % 50 ? true : false;
+
+    int ret = euclideanModulo(h, i * 10);
+
+    return ret > i * 5 ? true : false;
 }

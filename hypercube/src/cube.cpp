@@ -9,6 +9,7 @@
 #include <climits>
 
 #include "hypercubeUtils.h"
+#include "HChashTable.h"
 #include "mathUtils.h"
 
 #define DEF_K 14
@@ -22,7 +23,7 @@ using namespace std;
 int main(int argc, char **argv)
 {
     std::string option;
-    while (!(option == "TERM"))
+    while (!(option == "TERM" || option == "term"))
     {
         std::cout << std::endl
                   << std::endl
@@ -189,8 +190,7 @@ int main(int argc, char **argv)
                  << std::endl;
             return EXIT_FAILURE;
         }
-        ifstream inputFile;
-        inputFile.open(HCData.inputFileName, ios::in);
+        ifstream inputFile(HCData.inputFileName);
         if (!inputFile.is_open())
         {
             cerr << "Could not open the file: '"
@@ -199,16 +199,17 @@ int main(int argc, char **argv)
             return EXIT_FAILURE;
         }
         cout << "Reading input file " << HCData.inputFileName << "..." << endl;
-        vector<std::string> inputLines;
+        std::vector<std::string> inputLines;
         std::string line;
         while (getline(inputFile, line))
         {
             inputLines.push_back(line);
         }
 
-        vector<PointPtr> inputPoints;
+        std::vector<PointPtr> inputPoints;
 
         int numOfPoints = inputLines.size();
+        std::cout << numOfPoints << std::endl;
         int dimension = 0;
 
         for (int i = 0; i < numOfPoints; i++)
@@ -216,7 +217,7 @@ int main(int argc, char **argv)
             // separate std::string by Tabs
             // pick every element from 2nd to std::endl
             // read point coordinates
-            PointPtr currPoint = new Point;
+            Point *currPoint = new Point;
             std::string word = "";
             dimension = 0;
             for (char x : inputLines[i])
@@ -242,8 +243,16 @@ int main(int argc, char **argv)
         inputFile.close();
         dimension--;
         HCData.dimension = dimension;
-        std::cout << "dim" << dimension;
+        std::cout << "Dimension:" << HCData.dimension << std::endl;
         // Here insert points to Hypercube data structure when u figure out how
+
+        HChashTable HypercubeObject(HCData.dimension, HCData.projectionDimension, HCData.probes, HCData.maxCandidatePoints);
+        std::cout << "Inserting items to hash table..." << std::endl;
+        for (int i = 0; i < inputPoints.size(); i++)
+            HypercubeObject.HChashTable::InsertPoint(inputPoints[i]);
+
+        std::cout << "Opening query File" << std::endl;
+
         ifstream queryFile;
         queryFile.open(HCData.queryFileName, ios::in);
         if (!queryFile.is_open())
@@ -292,6 +301,79 @@ int main(int argc, char **argv)
 
             queryPoints.push_back(currPoint);
         }
+        queryFile.close();
+
+        vector<vector<Neighbour> *> k_nearest_neighbours;
+        k_nearest_neighbours.resize(queryLines.size());
+
+        vector<kNeighboursPtr> queryOutputData;
+        queryOutputData.resize(queryLines.size());
+
+        vector<double> tCube;
+        tCube.resize(queryLines.size());
+
+        std::cout << "Executing Hypercube search algorithm..." << std::endl;
+
+        for (int i = 0; i < queryLines.size(); i++)
+        {
+            auto Cube_start = std::chrono::high_resolution_clock::now();
+            queryOutputData[i] = HypercubeObject.HChashTable::find_k_nearest_neighbours(queryPoints[i], HCData.numberOfNearest);
+            auto Cube_end = std::chrono::high_resolution_clock::now();
+            tCube[i] = std::chrono::duration_cast<std::chrono::milliseconds>(Cube_end - Cube_start).count();
+        }
+
+        vector<kNeighboursPtr> queryTrueNeighbors;
+        queryTrueNeighbors.resize(queryLines.size());
+        vector<double> tTrue;
+        tTrue.resize(queryLines.size());
+        std::cout << "Executing brute-force search algorithm..." << std::endl;
+
+        for (int i = 0; i < queryLines.size(); i++)
+        {
+            auto True_start = std::chrono::high_resolution_clock::now();
+            queryTrueNeighbors[i] = find_k_true_neighbours(queryPoints[i], HCData.numberOfNearest, inputPoints, HCData.dimension);
+            auto True_end = std::chrono::high_resolution_clock::now();
+            tTrue[i] = std::chrono::duration_cast<std::chrono::milliseconds>(True_end - True_start).count();
+        }
+
+        ofstream outputFile(HCData.outputFileName);
+        if (!outputFile.is_open())
+        {
+            cerr << "Could not open the file: '"
+                 << HCData.outputFileName << "'"
+                 << std::endl;
+            return EXIT_FAILURE;
+        }
+
+        for (int i = 0; i < queryLines.size(); i++)
+        {
+            outputFile << "Query: "
+                       << queryPoints[i]->id << std::endl;
+
+            for (int j = 0; j < queryOutputData[i]->size; j++)
+            {
+                outputFile << "Nearest neighbor-"
+                           << j + 1 << ": " << queryOutputData[i]->neighbours[j]->point->id << std::endl
+                           << "distanceHypercube: " << queryOutputData[i]->neighbours[j]->dist << std::endl;
+                if (distance_true_visible)
+                {
+                    outputFile << "True Nearest neighbor-"
+                               << j + 1 << ": " << queryTrueNeighbors[i]->neighbours[j]->point->id << std::endl;
+                }
+                outputFile << "distanceTrue: " << queryTrueNeighbors[i]->neighbours[j]->dist << std::endl;
+            }
+
+            outputFile << "tCube: " << (double)(tCube[i] / 1000) << 's' << std::endl
+                       << "tTrue: " << (double)(tTrue[i] / 1000) << 's' << std::endl
+                //<< "R-near neighbors:" << std::endl
+                ;
+            // for (int j = 0; j < queryRangeSearch[i].size(); j++)
+            //     outputFile << queryRangeSearch[i][j]->id << std::endl;
+            outputFile << std::endl
+                       << std::endl;
+        }
+        outputFile.close();
+
         ///////////////////////////////////////////////////////////////////////////////////////////////////////
         std::cout << "Rerun Program?..." << std::endl
                   << "======Options======" << std::endl
@@ -304,7 +386,7 @@ int main(int argc, char **argv)
             option = "";
             while ((ch = getchar()) != '\n')
                 option += ch;
-            if (option == "CONT" || option == "TERM")
+            if (option == "CONT" || option == "TERM" || option == "term")
                 break;
         }
     }

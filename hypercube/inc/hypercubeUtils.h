@@ -3,7 +3,9 @@
 
 #include <string>
 #include "mathUtils.h"
-#include "hashTable.h"
+#include "HChashTable.h"
+
+using namespace std;
 
 typedef struct inputDataStruct
 {
@@ -19,12 +21,12 @@ typedef struct inputDataStruct
 } inputData;
 
 void sort_neighbours(kNeighboursPtr k_nearest_neighbours, int k_neighbours);
-void sort_points(vector<PointPtr> *Data);
-int notAlreadyExists(kNeighboursPtr k_nearest_neighbours, string pointID);
+void sort_points(std::vector<PointPtr> *Data);
+int notAlreadyExists(kNeighboursPtr k_nearest_neighbours, std::string pointID);
 kNeighboursPtr find_k_true_neighbours(PointPtr queryPoint,
                                       int k_neighbours,
-                                      vector<PointPtr> inputPoints,
+                                      std::vector<PointPtr> inputPoints,
                                       int dim);
-bool mapFunction(int h);
+bool mapFunction(int h, int i);
 
 #endif

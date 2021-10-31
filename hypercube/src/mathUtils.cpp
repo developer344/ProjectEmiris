@@ -1,5 +1,7 @@
 #include "mathUtils.h"
 
+using namespace std;
+
 double normalDistributionGenerator(double mi, double sigma)
 {
     // Source: https://en.cppreference.com/w/cpp/numeric/random/uniform_real_distribution
@@ -12,6 +14,7 @@ double normalDistributionGenerator(double mi, double sigma)
 double uniformDistributionGenerator(double alpha, double beta)
 {
     // Source: https://www.cplusplus.com/reference/random/normal_distribution/
+
     std::random_device randomDevice;
     std::mt19937 generator(randomDevice());
     std::uniform_real_distribution<> distribution(alpha, beta);
@@ -40,7 +43,7 @@ int avoidOverFlowModulo(int a, int b, int m, char op)
     case '/':
         if (b == 0)
         {
-            cerr << "Division by zero" << endl;
+            std::cerr << "Division by zero" << std::endl;
             exit(1);
         }
         return euclideanModulo(euclideanModulo(a, m) / euclideanModulo(b, m), m);
@@ -48,7 +51,7 @@ int avoidOverFlowModulo(int a, int b, int m, char op)
         return euclideanModulo(euclideanModulo(a, m) % euclideanModulo(b, m), m);
         ;
     default:
-        cerr << "Wrong Operator" << endl;
+        std::cerr << "Wrong Operator" << std::endl;
         exit(1);
     }
 }
@@ -62,7 +65,7 @@ int euclideanModulo(int x, int y)
 int powerWithBase2(int exp)
 {
 
-    int retValue;
+    int retValue = 1;
 
     for (int i = 0; i < exp; i++)
     {

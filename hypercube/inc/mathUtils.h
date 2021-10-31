@@ -5,11 +5,13 @@
 #include <string.h>
 #include <random>
 #include <cmath>
-#include "hashTable.h"
+#include "HChashTable.h"
+
+using namespace std;
 
 double normalDistributionGenerator(double mi = 0.0, double sigma = 1.0);
 double uniformDistributionGenerator(double alpha = 0.0, double beta = 1.0);
-double euclideanDistance(PointPtr x, PointPtr y, int dimension);
+double euclideanDistance(Point *x, Point *y, int dimension);
 int avoidOverFlowModulo(int a, int b, int m, char op);
 int euclideanModulo(int x, int y);
 int powerWithBase2(int exp);
