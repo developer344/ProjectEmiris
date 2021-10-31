@@ -279,6 +279,7 @@ int main(int argc, char **argv)
 
             queryPoints.push_back(currPoint);
         }
+        queryFile.close();
 
         vector<vector<Neighbour> *> k_nearest_neighbours;
         k_nearest_neighbours.resize(queryLines.size());
@@ -321,7 +322,6 @@ int main(int argc, char **argv)
         {
             queryRangeSearch[i] = HashTablesObject.HashTables::range_search(queryPoints[i], LSHData.radius);
         }
-        queryFile.close();
         // std::cout << "After kNeighbours" << std::endl;
         ofstream outputFile(LSHData.outputFileName);
         if (!outputFile.is_open())

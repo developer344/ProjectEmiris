@@ -1,5 +1,7 @@
 #include "lshUtils.h"
 
+using namespace std;
+
 void sort_neighbours(kNeighboursPtr k_nearest_neighbours, int k_neighbours) // sort distance in a vector of k distances
 {
     int k = k_neighbours; // number of neighbours
@@ -40,7 +42,7 @@ int notAlreadyExists(kNeighboursPtr k_nearest_neighbours, string pointID)
     return 1;
 }
 
-kNeighboursPtr find_k_true_neighbours(PointPtr queryPoint, int k_neighbours, vector<PointPtr> inputPoints, int dim)
+kNeighboursPtr find_k_true_neighbours(PointPtr queryPoint, int k_neighbours, vector<PointPtr> inputPoints, int dimension)
 {
     // PointPtr curPoint;
     // int curDist;
@@ -62,7 +64,7 @@ kNeighboursPtr find_k_true_neighbours(PointPtr queryPoint, int k_neighbours, vec
     for (int i = 0; i < inputPoints.size(); i++)
     {
         currNeighbour->point = inputPoints[i];
-        currNeighbour->dist = euclideanDistance(queryPoint, currNeighbour->point, dim);
+        currNeighbour->dist = euclideanDistance(queryPoint, currNeighbour->point, dimension);
 
         if (currNeighbour->dist < returnData->neighbours[k_neighbours - 1]->dist && currNeighbour->dist > 0)
         {

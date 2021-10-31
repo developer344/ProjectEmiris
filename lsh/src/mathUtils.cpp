@@ -1,5 +1,7 @@
 #include "mathUtils.h"
 
+using namespace std;
+
 double normalDistributionGenerator(double mi, double sigma)
 {
     // Source: https://en.cppreference.com/w/cpp/numeric/random/uniform_real_distribution
