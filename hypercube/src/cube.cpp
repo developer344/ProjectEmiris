@@ -251,8 +251,6 @@ int main(int argc, char **argv)
         for (int i = 0; i < inputPoints.size(); i++)
             HypercubeObject.HChashTable::InsertPoint(inputPoints[i]);
 
-        std::cout << "Opening query File" << std::endl;
-
         ifstream queryFile;
         queryFile.open(HCData.queryFileName, ios::in);
         if (!queryFile.is_open())
