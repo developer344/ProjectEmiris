@@ -2,6 +2,8 @@
 #include "mathUtils.h"
 #include "hypercubeUtils.h"
 
+#include <algorithm>
+
 #include "HChashTable.h"
 using namespace std;
 HChashTable::HChashTable(int dimension,
@@ -15,16 +17,18 @@ HChashTable::HChashTable(int dimension,
     this->maxcandidatesPoints = maxcandidatesPoints;
     this->bucketCount = powerWithBase2(this->projectionDimension + 1) - 1;
     this->Table.resize(this->bucketCount);
-    this->t.resize(this->bucketCount);
-    this->ri.resize(this->bucketCount);
-    this->v.resize(this->bucketCount);
+    this->t.resize(this->projectionDimension);
+    this->ri.resize(this->projectionDimension);
+    this->v.resize(this->projectionDimension);
     for (int i = 0; i < this->bucketCount; i++)
-    {
         this->Table[i] = NULL;
+    for (int i = 0; i < this->projectionDimension; i++)
+    {
+
         this->t[i] = uniformDistributionGenerator(0.0, W * 1.0);
         this->ri[i] = rand() % 2000 - 1000;
-        this->v[i].resize(this->projectionDimension);
-        for (int j = 0; j < this->projectionDimension; j++)
+        this->v[i].resize(this->dimension);
+        for (int j = 0; j < this->dimension; j++)
             this->v[i][j] = normalDistributionGenerator(0.0, 1.0);
     }
 }
@@ -39,7 +43,7 @@ HChashTable::~HChashTable()
 void HChashTable::InsertPoint(PointPtr point)
 {
     unsigned long hashValue = this->HChashTable::HashFunc(point);
-    //hashValue = hashValue % this->bucketCount;
+    // hashValue = hashValue % this->bucketCount;
     if (this->Table[hashValue] == NULL)
     {
         this->Table[hashValue] = new Bucket;
@@ -49,7 +53,7 @@ void HChashTable::InsertPoint(PointPtr point)
 
 unsigned long HChashTable::HashFunc(PointPtr point)
 {
-    long h;
+    int h;
 
     bool f;
 
@@ -86,7 +90,7 @@ std::vector<unsigned long> *HChashTable::find_n_hamming_distance(unsigned long c
         int x = currBucketValue ^ i;
         int setBits = 0;
 
-        //https://www.geeksforgeeks.org/hamming-distance-between-two-integers/
+        // https://www.geeksforgeeks.org/hamming-distance-between-two-integers/
         while (x > 0)
         {
             setBits += x & 1;
@@ -150,7 +154,7 @@ kNeighboursPtr HChashTable::find_k_nearest_neighbours(PointPtr queryPoint, int k
         }
         currBucket = bucketsToCheck->back();
         bucketsToCheck->pop_back();
-        //Checks currBucket
+        // Checks currBucket
         for (int k = 0; k < this->Table[currBucket]->points.size() && pointsChecked < this->maxcandidatesPoints; k++)
         {
 
@@ -180,6 +184,71 @@ kNeighboursPtr HChashTable::find_k_nearest_neighbours(PointPtr queryPoint, int k
     {
         delete bucketsToCheck;
     }
+    delete currNeighbour;
+    return returnData;
+}
+
+vector<PointPtr> HChashTable::range_search(PointPtr queryPoint, double range)
+{
+    std::vector<unsigned long> *bucketsToCheck = new std::vector<unsigned long>;
+    NeighbourPtr currNeighbour = new Neighbour;
+
+    vector<PointPtr> returnData;
+
+    unsigned long queryHash = this->HChashTable::HashFunc(queryPoint);
+    bucketsToCheck->push_back(queryHash);
+    int pointsChecked = 0, probesChecked = 0;
+    unsigned long currBucket = queryHash;
+    int currHammingDistance = 0;
+
+    while (pointsChecked < this->maxcandidatesPoints && probesChecked < this->probes)
+    {
+        if (bucketsToCheck->empty())
+        {
+            do
+            {
+                delete bucketsToCheck;
+                bucketsToCheck = this->HChashTable::find_n_hamming_distance(currBucket, ++currHammingDistance);
+                if (bucketsToCheck == NULL)
+                    bucketsToCheck = new std::vector<unsigned long>;
+            } while (bucketsToCheck->empty() && currHammingDistance < this->projectionDimension);
+
+            if (currHammingDistance > this->projectionDimension)
+            {
+                if (bucketsToCheck != NULL)
+                    delete bucketsToCheck;
+                delete currNeighbour;
+                return returnData;
+            }
+        }
+        currBucket = bucketsToCheck->back();
+        bucketsToCheck->pop_back();
+        // Checks currBucket
+        for (int k = 0; k < this->Table[currBucket]->points.size() && pointsChecked < this->maxcandidatesPoints; k++)
+        {
+
+            bool found = binary_search(returnData.begin(), returnData.end(), this->Table[currBucket]->points[k], BY_ID());
+
+            if (!found)
+            {
+                currNeighbour->point = this->Table[currBucket]->points[k];
+                currNeighbour->dist = euclideanDistance(queryPoint, currNeighbour->point, this->dimension);
+
+                if (currNeighbour->dist < range)
+                {
+                    returnData.push_back(this->Table[currBucket]->points[k]);
+                    sort_points(&returnData);
+                }
+            }
+        }
+        probesChecked++;
+    }
+
+    if (bucketsToCheck != NULL)
+    {
+        delete bucketsToCheck;
+    }
+
     delete currNeighbour;
     return returnData;
 }

@@ -37,6 +37,15 @@ typedef struct kNeighboursStruct
     int size; // number of requested (k) nearest neighbours
 } kNeighbours;
 
+struct BY_ID
+{
+    // Source: https://stackoverflow.com/questions/2999135/how-can-i-sort-the-vector-elements-using-members-as-the-key-in-c
+    bool operator()(PointPtr const &a, PointPtr const &b) const
+    {
+        return a->id < b->id;
+    }
+};
+
 class HChashTable
 {
 private:
@@ -60,6 +69,7 @@ public:
     unsigned long HashFunc(PointPtr point);
     kNeighboursPtr find_k_nearest_neighbours(PointPtr queryPoint, int k_neighbours);
     std::vector<unsigned long> *find_n_hamming_distance(unsigned long currBucketValue, int hammingDistance);
+    std::vector<PointPtr> range_search(PointPtr queryPoint, double range);
 };
 
 #endif

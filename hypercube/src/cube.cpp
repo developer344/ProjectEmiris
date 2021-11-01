@@ -336,6 +336,16 @@ int main(int argc, char **argv)
             tTrue[i] = std::chrono::duration_cast<std::chrono::milliseconds>(True_end - True_start).count();
         }
 
+        vector<vector<PointPtr>> queryRangeSearch;
+        queryRangeSearch.resize(queryLines.size());
+
+        std::cout << "Executing range search algorithm..." << std::endl;
+
+        for (int i = 0; i < queryLines.size(); i++)
+        {
+            queryRangeSearch[i] = HypercubeObject.HChashTable::range_search(queryPoints[i], HCData.radius);
+        }
+
         ofstream outputFile(HCData.outputFileName);
         if (!outputFile.is_open())
         {
@@ -365,14 +375,34 @@ int main(int argc, char **argv)
 
             outputFile << "tCube: " << (double)(tCube[i] / 1000) << 's' << std::endl
                        << "tTrue: " << (double)(tTrue[i] / 1000) << 's' << std::endl
-                //<< "R-near neighbors:" << std::endl
-                ;
-            // for (int j = 0; j < queryRangeSearch[i].size(); j++)
-            //     outputFile << queryRangeSearch[i][j]->id << std::endl;
+                       << "R-near neighbors:" << std::endl;
+            for (int j = 0; j < queryRangeSearch[i].size(); j++)
+                outputFile << queryRangeSearch[i][j]->id << std::endl;
             outputFile << std::endl
                        << std::endl;
         }
         outputFile.close();
+
+        for (int i = 0; i < inputPoints.size(); i++)
+        {
+            delete inputPoints[i];
+            if (i < queryPoints.size()) // Query points will always be <= input points, so this is safe
+            {
+                delete queryPoints[i];
+                delete k_nearest_neighbours[i];
+                for (int j = 0; j < queryOutputData[i]->neighbours.size(); j++)
+                {
+                    delete queryOutputData[i]->neighbours[j];
+                }
+                delete queryOutputData[i];
+
+                for (int j = 0; j < queryTrueNeighbors[i]->neighbours.size(); j++)
+                {
+                    delete queryTrueNeighbors[i]->neighbours[j];
+                }
+                delete queryTrueNeighbors[i];
+            }
+        }
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////
         std::cout << "Rerun Program?..." << std::endl
