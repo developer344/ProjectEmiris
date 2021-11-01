@@ -205,6 +205,7 @@ int main(int argc, char **argv)
         {
             inputLines.push_back(line);
         }
+        inputFile.close();
 
         std::vector<PointPtr> inputPoints;
 
@@ -240,7 +241,7 @@ int main(int argc, char **argv)
 
             inputPoints.push_back(currPoint);
         }
-        inputFile.close();
+
         dimension--;
         HCData.dimension = dimension;
         std::cout << "Dimension:" << HCData.dimension << std::endl;
@@ -267,6 +268,7 @@ int main(int argc, char **argv)
         {
             queryLines.push_back(line);
         }
+        queryFile.close();
 
         vector<PointPtr> queryPoints;
 
@@ -299,7 +301,6 @@ int main(int argc, char **argv)
 
             queryPoints.push_back(currPoint);
         }
-        queryFile.close();
 
         vector<vector<Neighbour> *> k_nearest_neighbours;
         k_nearest_neighbours.resize(queryLines.size());
