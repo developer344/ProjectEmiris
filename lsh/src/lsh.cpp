@@ -171,8 +171,7 @@ int main(int argc, char **argv)
                  << std::endl;
             return EXIT_FAILURE;
         }
-        ifstream inputFile;
-        inputFile.open(LSHData.inputFileName, ios::in);
+        ifstream inputFile(LSHData.inputFileName);
         if (!inputFile.is_open())
         {
             cerr << "Could not open the file: '"
@@ -187,6 +186,7 @@ int main(int argc, char **argv)
         {
             inputLines.push_back(line);
         }
+        inputFile.close();
 
         vector<PointPtr> inputPoints;
 
@@ -221,7 +221,7 @@ int main(int argc, char **argv)
 
             inputPoints.push_back(currPoint);
         }
-        inputFile.close();
+
         dimension--;
         LSHData.dimension = dimension;
         std::cout << "dim" << dimension;
@@ -231,8 +231,7 @@ int main(int argc, char **argv)
         for (int i = 0; i < inputPoints.size(); i++)
             HashTablesObject.HashTables::InsertPoint(inputPoints[i]);
 
-        ifstream queryFile;
-        queryFile.open(LSHData.queryFileName, ios::in);
+        ifstream queryFile(LSHData.queryFileName);
         if (!queryFile.is_open())
         {
             cerr << "Could not open the file: '"
@@ -247,6 +246,7 @@ int main(int argc, char **argv)
         {
             queryLines.push_back(line);
         }
+        queryFile.close();
 
         vector<PointPtr> queryPoints;
 
@@ -279,7 +279,6 @@ int main(int argc, char **argv)
 
             queryPoints.push_back(currPoint);
         }
-        queryFile.close();
 
         vector<vector<Neighbour> *> k_nearest_neighbours;
         k_nearest_neighbours.resize(queryLines.size());
