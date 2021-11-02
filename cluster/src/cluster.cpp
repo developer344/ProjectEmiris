@@ -298,9 +298,9 @@ int main(int argc, char **argv)
             silhouetteSum+= silhouette_calculator(clusters[i].points[j],clusters,dimension);
         }
         clusters[i].silhouette = silhouetteSum / (double)(clusters[i].size);  // saves average
-        totalSilhouette+=clusters[i].silhouette;
+        totalSilhouette+=silhouetteSum;
     }
-    totalSilhouette /= CLData.number_of_clusters;
+    totalSilhouette /= numOfPoints;
 
 
     ofstream outputFile(CLData.outputFileName);
