@@ -339,6 +339,21 @@ int main(int argc, char **argv)
         outputFile << clusters[i].silhouette << ", ";
     outputFile << totalSilhouette << "]" << endl;
 
+    if(CLData.complete) {
+        outputFile << endl;
+        for (int i = 0; i < CLData.number_of_clusters; i++)
+        {
+            outputFile << "CLUSTER-"
+                        << i+1 << " {"
+                        << clusters[i].centroidPoint->id;
+
+            for (int j = 0; j < clusters[i].size; j++)
+                outputFile << ", " << clusters[i].points[j]->id;
+
+            outputFile << "}" << endl;
+        }
+    }
+
     outputFile.close();
 
     return EXIT_SUCCESS;
