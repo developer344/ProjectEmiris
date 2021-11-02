@@ -17,7 +17,7 @@ typedef struct ClusterStruct
     PointPtr centroidPoint;
     std::vector<PointPtr> points;
     int size;
-    int silhouette;
+    double silhouette;
 } Cluster;
 
 
@@ -43,5 +43,8 @@ typedef struct ClusterDataStruct
     int dimension;
 
 } inputData;
+
+double silhouette_calculator(PointPtr point, std::vector<Cluster> clusters, int dimensions);
+std::vector<int> get_2_closest_clusters(PointPtr point, std::vector<Cluster> clusters, int dimensions);
 
 #endif
