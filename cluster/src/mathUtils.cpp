@@ -1,6 +1,6 @@
 #include "mathUtils.h"
 
-double euclideanDistance(PointPtr x, PointPtr y, int dimension)
+double euclideanDistance(const PointPtr x, const PointPtr y, int dimension)
 {
     double dist = 0.0;
     for (int i = 0; i < dimension; i++)
@@ -8,7 +8,7 @@ double euclideanDistance(PointPtr x, PointPtr y, int dimension)
     return sqrt(dist);
 }
 
-double uniformDistributionGenerator(double alpha, double beta)
+double uniformDistributionGenerator(const double alpha, const double beta)
 {
     // Source: https://www.cplusplus.com/reference/random/normal_distribution/
     std::random_device randomDevice;

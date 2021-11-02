@@ -226,7 +226,7 @@ int main(int argc, char **argv)
         LSHData.dimension = dimension;
         std::cout << "dim" << dimension;
 
-        HashTables HashTablesObject(LSHData.intL, LSHData.numberOfHyperplanes, numOfPoints, LSHData.dimension);
+        HashTables HashTablesObject(LSHData.intL, LSHData.numberOfHyperplanes, numOfPoints, LSHData.dimension, numOfPoints / 4);
 
         for (int i = 0; i < inputPoints.size(); i++)
             HashTablesObject.HashTables::InsertPoint(inputPoints[i]);

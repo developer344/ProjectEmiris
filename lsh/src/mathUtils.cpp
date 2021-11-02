@@ -2,7 +2,7 @@
 
 using namespace std;
 
-double normalDistributionGenerator(double mi, double sigma)
+double normalDistributionGenerator(const double mi, const double sigma)
 {
     // Source: https://en.cppreference.com/w/cpp/numeric/random/uniform_real_distribution
     std::default_random_engine generator;
@@ -11,7 +11,15 @@ double normalDistributionGenerator(double mi, double sigma)
     return distribution(generator);
 }
 
-double uniformDistributionGenerator(double alpha, double beta)
+double euclideanDistance(const PointPtr x, const PointPtr y, int dimension)
+{
+    double dist = 0.0;
+    for (int i = 0; i < dimension; i++)
+        dist += (x->coords[i] - y->coords[i]) * (x->coords[i] - y->coords[i]);
+    return sqrt(dist);
+}
+
+double uniformDistributionGenerator(const double alpha, const double beta)
 {
     // Source: https://www.cplusplus.com/reference/random/normal_distribution/
     std::random_device randomDevice;
@@ -21,12 +29,13 @@ double uniformDistributionGenerator(double alpha, double beta)
     return distribution(generator);
 }
 
-double euclideanDistance(PointPtr x, PointPtr y, int dimension)
+bool is_number(const std::string &str)
+// https://stackoverflow.com/questions/4654636/how-to-determine-if-a-string-is-a-number-with-c
 {
-    double dist = 0.0;
-    for (int i = 0; i < dimension; i++)
-        dist += (x->coords[i] - y->coords[i]) * (x->coords[i] - y->coords[i]);
-    return sqrt(dist);
+    std::string::const_iterator iteration = str.begin();
+    while (iteration != str.end() && std::isdigit(*iteration))
+        ++iteration;
+    return !str.empty() && iteration == str.end();
 }
 
 int avoidOverFlowModulo(int a, int b, int m, char op)

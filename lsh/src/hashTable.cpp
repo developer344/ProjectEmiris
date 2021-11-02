@@ -10,13 +10,13 @@
 
 using namespace std;
 
-HashTables::HashTables(int L, int numberOfHyperplanes, int numberOfPoints, int dimension) // Constructor
+HashTables::HashTables(int L, int numberOfHyperplanes, int numberOfPoints, int dimension, int tableSize) // Constructor
 
 {
     this->numOfHashTables = L;
     this->numberOfHyperplanes = numberOfHyperplanes;
     this->numberOfPoints = numberOfPoints;
-    this->TableSize = numberOfPoints / 2;
+    this->TableSize = tableSize;
 
     this->dim = dimension;
     this->hash_tables.resize(L);

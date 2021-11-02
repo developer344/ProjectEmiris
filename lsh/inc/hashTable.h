@@ -60,7 +60,7 @@ private:
     vector<vector<vector<double>>> v;
 
 public:
-    HashTables(int L, int numberOfHyperplanes, int numberOfPoints, int dimension); // Constructor
+    HashTables(int L, int numberOfHyperplanes, int numberOfPoints, int dimension, int tableSize); // Constructor
     void InsertPoint(PointPtr point);
     int HashFunc(PointPtr point, int hashtableId);
     void PrintHashTables();

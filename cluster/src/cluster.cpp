@@ -12,10 +12,7 @@
 #include "clusterUtils.h"
 #include "kMeans.h"
 #include "mathUtils.h"
-#include "lloyd.h"
-// #include "hypercubeUtils.h"
-// #include "HChashTable.h"
-// #include "mathUtils.h"
+#include "methods.h"
 
 #define DEF_VECTOR_HASH_TABLES 3
 #define DEF_VECTOR_HASH_FUNCTIONS 4
@@ -269,83 +266,92 @@ int main(int argc, char **argv)
     std::vector<PointPtr> centroidPoints = k_means(inputPoints, CLData.number_of_clusters, CLData.dimension);
 
     std::vector<Cluster> clusters;
-    
+
     clusters.resize(CLData.number_of_clusters);
-    for(int i=0;i<CLData.number_of_clusters;i++) {
+    for (int i = 0; i < CLData.number_of_clusters; i++)
+    {
         clusters[i].centroidPoint = centroidPoints[i];
         clusters[i].size = 0;
     }
 
     auto cluster_start = std::chrono::high_resolution_clock::now();
-    for(int i=0;i<numOfPoints;i++) {
-        int index=0;
-        if(CLData.method == CLASSIC_METHOD) 
+    if (CLData.method == CLASSIC_METHOD)
+    {
+        int index = 0;
+        for (int i = 0; i < numOfPoints; i++)
+        {
             index = lloyd_method(centroidPoints, inputPoints[i], CLData.dimension);
-        else if(CLData.method == LSH_METHOD)
-            index = lloyd_method(centroidPoints, inputPoints[i], CLData.dimension);
-        else if(CLData.method == HYPERCUBE_METHOD)
-            index = lloyd_method(centroidPoints, inputPoints[i], CLData.dimension);
-        clusters[index].points.push_back(inputPoints[i]);
-        clusters[index].size++;
+            clusters[index].points.push_back(inputPoints[i]);
+            clusters[index].size++;
+        }
     }
+    else if (CLData.method == LSH_METHOD)
+        lsh_method(&centroidPoints, &clusters, &inputPoints, &CLData);
+    else if (CLData.method == HYPERCUBE_METHOD)
+        // index = lloyd_method(centroidPoints, inputPoints[i], CLData.dimension)
+        ;
     auto cluster_end = std::chrono::high_resolution_clock::now();
     int tCluster = std::chrono::duration_cast<std::chrono::milliseconds>(cluster_end - cluster_start).count();
 
-    double totalSilhouette=0.0;
-    for(int i=0;i<CLData.number_of_clusters;i++) { // for each cluster
-        double silhouetteSum=0.0;
-        for(int j=0;j<clusters[i].size;j++) {   // for each point in cluster
-            silhouetteSum+= silhouette_calculator(clusters[i].points[j],clusters,dimension);
+    std::cout << "Evaluating silhouette..." << std::endl;
+
+    double totalSilhouette = 0.0;
+    for (int i = 0; i < CLData.number_of_clusters; i++)
+    { // for each cluster
+        double silhouetteSum = 0.0;
+        for (int j = 0; j < clusters[i].size; j++)
+        { // for each point in cluster
+            silhouetteSum += silhouette_calculator(clusters[i].points[j], clusters, dimension);
         }
-        clusters[i].silhouette = silhouetteSum / (double)(clusters[i].size);  // saves average
-        totalSilhouette+=silhouetteSum;
+        clusters[i].silhouette = silhouetteSum / (double)(clusters[i].size); // saves average
+        totalSilhouette += silhouetteSum;
     }
     totalSilhouette /= numOfPoints;
-
 
     ofstream outputFile(CLData.outputFileName);
     if (!outputFile.is_open())
     {
         cerr << "Could not open the file: '"
-                << CLData.outputFileName << "'"
-                << std::endl;
+             << CLData.outputFileName << "'"
+             << std::endl;
         return EXIT_FAIL_OUTPUT_ERR;
     }
 
     outputFile << "Algorithm: ";
-    if(CLData.method == CLASSIC_METHOD)
+    if (CLData.method == CLASSIC_METHOD)
         outputFile << "Lloyds";
-    else if(CLData.method == LSH_METHOD)
+    else if (CLData.method == LSH_METHOD)
         outputFile << "Range Search LSH";
-    else if(CLData.method == HYPERCUBE_METHOD)
+    else if (CLData.method == HYPERCUBE_METHOD)
         outputFile << "Range Search Hypercube";
     outputFile << endl;
 
     for (int i = 0; i < CLData.number_of_clusters; i++)
     {
         outputFile << "CLUSTER-"
-                    << i+1 << "{size: " << clusters[i].size
-                    << ", centroid: ";
+                   << i + 1 << "{size: " << clusters[i].size
+                   << ", centroid: ";
 
         for (int j = 0; j < CLData.dimension; j++)
             outputFile << centroidPoints[i]->coords[j] << " ";
         outputFile << "}" << endl;
     }
-    outputFile << "clustering_time: " << (double)(tCluster/1000)
-                << "s" << endl;
+    outputFile << "clustering_time: " << (double)(tCluster / 1000)
+               << "s" << endl;
     outputFile << "Silhouette: [";
 
     for (int i = 0; i < CLData.number_of_clusters; i++)
         outputFile << clusters[i].silhouette << ", ";
     outputFile << totalSilhouette << "]" << endl;
 
-    if(CLData.complete) {
+    if (CLData.complete)
+    {
         outputFile << endl;
         for (int i = 0; i < CLData.number_of_clusters; i++)
         {
             outputFile << "CLUSTER-"
-                        << i+1 << " {"
-                        << clusters[i].centroidPoint->id;
+                       << i + 1 << " {"
+                       << clusters[i].centroidPoint->id;
 
             for (int j = 0; j < clusters[i].size; j++)
                 outputFile << ", " << clusters[i].points[j]->id;
