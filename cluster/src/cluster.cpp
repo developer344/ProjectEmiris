@@ -10,6 +10,9 @@
 #include <string>
 
 #include "clusterUtils.h"
+#include "kMeans.h"
+#include "mathUtils.h"
+#include "lloyd.h"
 // #include "hypercubeUtils.h"
 // #include "HChashTable.h"
 // #include "mathUtils.h"
@@ -261,6 +264,64 @@ int main(int argc, char **argv)
     dimension--;
     CLData.dimension = dimension;
     std::cout << "Dimension:" << CLData.dimension << std::endl;
+
+    //Calculate vector of centroid points (1 for each cluster)
+    std::vector<PointPtr> centroidPoints = k_means(inputPoints, CLData.number_of_clusters, CLData.dimension);
+
+    std::vector<Cluster> clusters;
+    
+    clusters.resize(CLData.number_of_clusters);
+    for(int i=0;i<CLData.number_of_clusters;i++) {
+        clusters[i].centroidPoint = centroidPoints[i];
+        clusters[i].size = 0;
+    }
+
+    auto cluster_start = std::chrono::high_resolution_clock::now();
+    for(int i=0;i<numOfPoints;i++) {
+        int index=0;
+        if(CLData.method == CLASSIC_METHOD) 
+            index = lloyd_method(centroidPoints, inputPoints[i], CLData.dimension);
+        else if(CLData.method == LSH_METHOD)
+            index = lloyd_method(centroidPoints, inputPoints[i], CLData.dimension);
+        else if(CLData.method == HYPERCUBE_METHOD)
+            index = lloyd_method(centroidPoints, inputPoints[i], CLData.dimension);
+        clusters[index].points.push_back(inputPoints[i]);
+        clusters[index].size++;
+    }
+    auto cluster_end = std::chrono::high_resolution_clock::now();
+    int tCluster = std::chrono::duration_cast<std::chrono::milliseconds>(cluster_end - cluster_start).count();
+
+    ofstream outputFile(CLData.outputFileName);
+    if (!outputFile.is_open())
+    {
+        cerr << "Could not open the file: '"
+                << CLData.outputFileName << "'"
+                << std::endl;
+        return EXIT_FAIL_OUTPUT_ERR;
+    }
+
+    outputFile << "Algorithm: ";
+    if(CLData.method == CLASSIC_METHOD)
+        outputFile << "Lloyds";
+    else if(CLData.method == LSH_METHOD)
+        outputFile << "Range Search LSH";
+    else if(CLData.method == HYPERCUBE_METHOD)
+        outputFile << "Range Search Hypercube";
+    outputFile << endl;
+
+    for (int i = 0; i < CLData.number_of_clusters; i++)
+    {
+        outputFile << "CLUSTER-"
+                    << i+1 << "{size: " << clusters[i].size
+                    << ", centroid: ";
+
+        for (int j = 0; j < CLData.dimension; j++)
+            outputFile << centroidPoints[i]->coords[j] << " ";
+        outputFile << "}" << endl;
+    }
+    outputFile << "clustering_time: " << (double)(tCluster/1000)
+                << "s" << endl;
+    outputFile.close();
 
     return EXIT_SUCCESS;
 }

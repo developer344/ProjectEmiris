@@ -1,14 +1,25 @@
 #ifndef _CLUSTER_UTILS_H_
 #define _CLUSTER_UTILS_H_
 #include <string>
+#include <vector>
 
 typedef struct PointStruct *PointPtr;
+typedef struct ClusterStruct *ClusterPtr;
 
 typedef struct PointStruct
 {
     std::string id;
     std::vector<double> coords;
 } Point;
+
+typedef struct ClusterStruct
+{
+    PointPtr centroidPoint;
+    std::vector<PointPtr> points;
+    int size;
+    int silhouette;
+} Cluster;
+
 
 typedef struct ClusterDataStruct
 {
@@ -32,7 +43,5 @@ typedef struct ClusterDataStruct
     int dimension;
 
 } inputData;
-
-bool is_number(const std::string &s);
 
 #endif
