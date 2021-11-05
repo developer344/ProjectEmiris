@@ -1,10 +1,18 @@
-#include <cmath>
+#ifndef _MATH_UTILS_H_
+#define _MATH_UTILS_H_
+
+#include <iostream>
+#include <string.h>
 #include <random>
-#include <string>
-#include <vector>
+#include <cmath>
+#include "hashTable.h"
 
-#include "clusterUtils.h"
-
-double euclideanDistance(PointPtr x, PointPtr y, int dimension);
+double normalDistributionGenerator(double mi = 0.0, double sigma = 1.0);
 double uniformDistributionGenerator(double alpha = 0.0, double beta = 1.0);
+double euclideanDistance(PointPtr x, PointPtr y, int dimension);
+int avoidOverFlowModulo(int a, int b, int m, char op);
+int euclideanModulo(int x, int y);
+
 bool is_number(const std::string &s);
+
+#endif

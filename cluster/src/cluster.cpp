@@ -263,8 +263,8 @@ int main(int argc, char **argv)
     std::cout << "Dimension:" << CLData.dimension << std::endl;
 
     //Calculate vector of centroid points (1 for each cluster)
+    std::cout << "Calculating centroid points..." << std::endl;
     std::vector<PointPtr> centroidPoints = k_means(inputPoints, CLData.number_of_clusters, CLData.dimension);
-
     std::vector<Cluster> clusters;
 
     clusters.resize(CLData.number_of_clusters);
@@ -274,6 +274,7 @@ int main(int argc, char **argv)
         clusters[i].size = 0;
     }
 
+    std::cout << "Assigning points to clusters..." << std::endl;
     auto cluster_start = std::chrono::high_resolution_clock::now();
     if (CLData.method == CLASSIC_METHOD)
     {
@@ -286,7 +287,7 @@ int main(int argc, char **argv)
         }
     }
     else if (CLData.method == LSH_METHOD)
-        lsh_method(&centroidPoints, &clusters, &inputPoints, &CLData);
+        lsh_method(&centroidPoints, &clusters, &inputPoints, &CLData, numOfPoints);
     else if (CLData.method == HYPERCUBE_METHOD)
         // index = lloyd_method(centroidPoints, inputPoints[i], CLData.dimension)
         ;
