@@ -106,7 +106,7 @@ void lsh_method(std::vector<PointPtr> *centroids, std::vector<Cluster> *clusters
         for (int c = 0; c < CLData->number_of_clusters; c++)
             clusterPoints[c] = HashTablesObject.range_search((*centroids)[c], currRadius);
 
-        // duplicates = find_duplicates(clusterPoints, CLData->number_of_clusters);
+        //duplicates = find_duplicates(clusterPoints, CLData->number_of_clusters);
 
         // for (PointPtr currPoint : duplicates)
         // {
@@ -145,8 +145,9 @@ void lsh_method(std::vector<PointPtr> *centroids, std::vector<Cluster> *clusters
         //     }
         // }
         for (int c = 0; c < CLData->number_of_clusters; c++){
-            for (int pointIndex = 0; pointIndex < clusterPoints.size(); pointIndex++)
+            for (int pointIndex = 0; pointIndex < clusterPoints.size(); pointIndex++){
                 (*clusters)[c].points.push_back(clusterPoints[c][pointIndex]);
+                (*clusters)[c].size++;}
             clusterPoints[c].clear();
         }
         currRadius *= 2;

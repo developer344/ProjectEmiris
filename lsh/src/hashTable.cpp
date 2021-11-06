@@ -166,15 +166,18 @@ kNeighboursPtr HashTables::find_k_nearest_neighbours(PointPtr queryPoint, int k_
 
 vector<PointPtr> HashTables::range_search(PointPtr queryPoint, double range)
 {
-
+    cout << "a1" << endl;
     NeighbourPtr currNeighbour = new Neighbour;
-
+    cout << "a2" << endl;
     vector<PointPtr> returnData;
-
+    cout << "a3" << endl;
     for (int i = 0; i < this->numOfHashTables; i++) // for i from 1 to L do
     {
+        cout << "a4" << endl;
         int queryID = this->HashFunc(queryPoint, i);
+        cout << "a5" << endl;
         int g = euclideanModulo(queryID, this->TableSize);
+        cout << "a6" << endl;
         for (int j = 0; j < this->hash_tables[i][g].points.size(); j++) // for each item p in bucket gi(q) do
         {
             bool found = binary_search(returnData.begin(), returnData.end(), this->hash_tables[i][g].points[j], BY_ID());
@@ -193,7 +196,9 @@ vector<PointPtr> HashTables::range_search(PointPtr queryPoint, double range)
             }
         }
     }
+    cout << "oo" << endl;
     delete currNeighbour;
+    cout << "aa" << endl;
     return returnData;
 }
 

@@ -294,20 +294,22 @@ int main(int argc, char **argv)
     auto cluster_end = std::chrono::high_resolution_clock::now();
     int tCluster = std::chrono::duration_cast<std::chrono::milliseconds>(cluster_end - cluster_start).count();
 
-    std::cout << "Evaluating silhouette..." << std::endl;
+    // std::cout << "Evaluating silhouette..." << std::endl;
 
-    double totalSilhouette = 0.0;
-    for (int i = 0; i < CLData.number_of_clusters; i++)
-    { // for each cluster
-        double silhouetteSum = 0.0;
-        for (int j = 0; j < clusters[i].size; j++)
-        { // for each point in cluster
-            silhouetteSum += silhouette_calculator(clusters[i].points[j], clusters, dimension);
-        }
-        clusters[i].silhouette = silhouetteSum / (double)(clusters[i].size); // saves average
-        totalSilhouette += silhouetteSum;
-    }
-    totalSilhouette /= numOfPoints;
+    // double totalSilhouette = 0.0;
+    // for (int i = 0; i < CLData.number_of_clusters; i++)
+    // { // for each cluster
+    //     double silhouetteSum = 0.0;
+    //     for (int j = 0; j < clusters[i].size; j++)
+    //     { // for each point in cluster
+    //         silhouetteSum += silhouette_calculator(clusters[i].points[j], clusters, dimension);
+    //     }
+    //     clusters[i].silhouette = silhouetteSum / (double)(clusters[i].size); // saves average
+    //     totalSilhouette += silhouetteSum;
+    // }
+    // totalSilhouette /= numOfPoints;
+
+    std::cout << "Writing output file..." << std::endl;
 
     ofstream outputFile(CLData.outputFileName);
     if (!outputFile.is_open())
@@ -341,9 +343,9 @@ int main(int argc, char **argv)
                << "s" << endl;
     outputFile << "Silhouette: [";
 
-    for (int i = 0; i < CLData.number_of_clusters; i++)
-        outputFile << clusters[i].silhouette << ", ";
-    outputFile << totalSilhouette << "]" << endl;
+    // for (int i = 0; i < CLData.number_of_clusters; i++)
+    //     outputFile << clusters[i].silhouette << ", ";
+    // outputFile << totalSilhouette << "]" << endl;
 
     if (CLData.complete)
     {
