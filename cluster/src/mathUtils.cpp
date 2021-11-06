@@ -1,13 +1,13 @@
 #include "mathUtils.h"
 
 using namespace std;
+std::default_random_engine generator;
 
 double normalDistributionGenerator(const double mi, const double sigma)
 {
     // Source: https://en.cppreference.com/w/cpp/numeric/random/uniform_real_distribution
-    std::default_random_engine generator;
     std::normal_distribution<double> distribution(mi, sigma);
-
+    // cout << "NormalDistGen " << distribution(generator) << endl;
     return distribution(generator);
 }
 

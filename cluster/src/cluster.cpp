@@ -262,7 +262,7 @@ int main(int argc, char **argv)
     CLData.dimension = dimension;
     std::cout << "Dimension:" << CLData.dimension << std::endl;
 
-    //Calculate vector of centroid points (1 for each cluster)
+    // Calculate vector of centroid points (1 for each cluster)
     std::cout << "Calculating centroid points..." << std::endl;
     std::vector<PointPtr> centroidPoints = k_means(inputPoints, CLData.number_of_clusters, CLData.dimension);
     std::vector<Cluster> clusters;
@@ -281,7 +281,7 @@ int main(int argc, char **argv)
         int index = 0;
         for (int i = 0; i < numOfPoints; i++)
         {
-            index = lloyd_method(centroidPoints, inputPoints[i], CLData.dimension);
+            index = lloyd_method(&centroidPoints, inputPoints[i], CLData.dimension);
             clusters[index].points.push_back(inputPoints[i]);
             clusters[index].size++;
         }
@@ -294,7 +294,7 @@ int main(int argc, char **argv)
     auto cluster_end = std::chrono::high_resolution_clock::now();
     int tCluster = std::chrono::duration_cast<std::chrono::milliseconds>(cluster_end - cluster_start).count();
 
-    // std::cout << "Evaluating silhouette..." << std::endl;
+    std::cout << "Evaluating silhouette..." << std::endl;
 
     // double totalSilhouette = 0.0;
     // for (int i = 0; i < CLData.number_of_clusters; i++)
@@ -352,7 +352,9 @@ int main(int argc, char **argv)
         outputFile << endl;
         for (int i = 0; i < CLData.number_of_clusters; i++)
         {
-            outputFile << "CLUSTER-"
+            std::sort(clusters[i].points.begin(), clusters[i].points.end(), BY_ID_INT());
+            outputFile << endl
+                       << "CLUSTER-"
                        << i + 1 << " {"
                        << clusters[i].centroidPoint->id;
 
@@ -364,6 +366,5 @@ int main(int argc, char **argv)
     }
 
     outputFile.close();
-
     return EXIT_SUCCESS;
 }

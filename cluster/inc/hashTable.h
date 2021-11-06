@@ -49,6 +49,14 @@ struct BY_ID
     }
 };
 
+struct BY_ID_INT
+{
+    // Source: https://stackoverflow.com/questions/2999135/how-can-i-sort-the-vector-elements-using-members-as-the-key-in-c
+    bool operator()(PointPtr const &a, PointPtr const &b) const
+    {
+        return stoi(a->id) < stoi(b->id);
+    }
+};
 class HashTables
 {
 private:
