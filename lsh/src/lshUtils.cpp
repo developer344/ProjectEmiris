@@ -1,6 +1,66 @@
+#include <iostream>
+#include <algorithm>
+#include <fstream>
+
 #include "lshUtils.h"
 
 using namespace std;
+
+std::vector<std::string> get_lines(std::string fileName)
+{
+    ifstream file(fileName);
+    if (!file.is_open())
+    {
+        std::cerr << "Could not open the file: '"
+                  << fileName << "'"
+                  << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+    std::cout << "Reading input file " << fileName << "..." << std::endl;
+    std::vector<std::string> inputLines;
+    std::string line;
+    while (getline(file, line))
+    {
+        inputLines.push_back(line);
+    }
+    file.close();
+    return inputLines;
+}
+
+int get_points(vector<std::string> linesVector, vector<PointPtr> *pointsVector)
+{
+    int dimension;
+    for (int i = 0; i < linesVector.size(); i++)
+    {
+        // separate std::string by Spaces
+        // pick every element from 2nd to std::endl
+        // read point coordinates
+        PointPtr currPoint = new Point;
+        std::string word = "";
+        dimension = 0;
+        for (char x : linesVector[i])
+        {
+            if (x == ' ')
+            {
+                if (dimension)
+                    currPoint->coords.push_back(atof(word.c_str()));
+                else
+                    currPoint->id = word;
+                word = "";
+
+                dimension++;
+            }
+            else
+            {
+                word = word + x;
+            }
+        }
+
+        pointsVector->push_back(currPoint);
+    }
+    dimension--;
+    return dimension;
+}
 
 void sort_neighbours(kNeighboursPtr k_nearest_neighbours, int k_neighbours) // sort distance in a vector of k distances
 {
@@ -80,4 +140,230 @@ kNeighboursPtr find_k_true_neighbours(PointPtr queryPoint, int k_neighbours, vec
 
     delete currNeighbour;
     return returnData;
+}
+
+inputData *getInputData(int *argc, char **argv)
+{
+
+    inputData *LSHData = new inputData;
+    vector<std::string> found;
+    LSHData->distance_true_visible = false;
+
+    for (int i = 0; i < *argc; i++)
+    {
+
+        if (std::string(argv[i]) == "-i")
+        {
+            LSHData->inputFileName = std::string(argv[i + 1]);
+            std::cout << LSHData->inputFileName << std::endl;
+            found.push_back("inputFile");
+        }
+        else if (std::string(argv[i]) == "-q")
+        {
+            LSHData->queryFileName = std::string(argv[i + 1]);
+            std::cout << LSHData->queryFileName << std::endl;
+            found.push_back("queryFile");
+        }
+        else if (std::string(argv[i]) == "-o")
+        {
+            LSHData->outputFileName = std::string(argv[i + 1]);
+            std::cout << LSHData->outputFileName << std::endl;
+            found.push_back("outputFile");
+        }
+        else if (std::string(argv[i]) == "-k")
+        {
+            LSHData->numberOfHyperplanes = atoi(argv[i + 1]);
+            std::cout << LSHData->numberOfHyperplanes << std::endl;
+            found.push_back("k");
+        }
+        else if (std::string(argv[i]) == "-L")
+        {
+            LSHData->intL = atoi(argv[i + 1]);
+            std::cout << LSHData->intL << std::endl;
+            found.push_back("l");
+        }
+        else if (std::string(argv[i]) == "-N")
+        {
+            LSHData->numberOfNearest = atoi(argv[i + 1]);
+            std::cout << LSHData->numberOfNearest << std::endl;
+            found.push_back("n");
+        }
+        else if (std::string(argv[i]) == "-R")
+        {
+            LSHData->radius = atoi(argv[i + 1]);
+            std::cout << LSHData->radius << std::endl;
+            found.push_back("r");
+        }
+        else if (std::string(argv[i]) == "--dist-true=visible")
+        {
+            LSHData->distance_true_visible = true;
+        }
+    }
+
+    //-----------------------------------------------------------------------------------------//
+
+    char ch;
+    string word = "";
+
+    *argc = 1;
+
+    found.push_back(" ");
+    std::string input = {};
+
+    if (std::find(found.begin(), found.end(), "inputFile") == found.end()) // if not found inputFile
+    {
+        std::cout << "Please give input file name" << std::endl;
+
+        while ((ch = getchar()) != '\n')
+            word += ch;
+        LSHData->inputFileName = word;
+    }
+    if (std::find(found.begin(), found.end(), "queryFile") == found.end()) // if not found queryFile
+    {
+        std::cout << "Please give query file name" << std::endl;
+
+        while ((ch = getchar()) != '\n')
+            word += ch;
+        LSHData->queryFileName = word;
+    }
+    if (std::find(found.begin(), found.end(), "outputFile") == found.end()) // if not found outputFile
+    {
+        std::cout << "Please give output file name" << std::endl;
+
+        while ((ch = getchar()) != '\n')
+            word += ch;
+        LSHData->outputFileName = word;
+    }
+    if (std::find(found.begin(), found.end(), "k") == found.end()) // if not found inputFile
+    {
+        std::cout << "Please give k: Press [ENTER] for default value or type the desired value." << std::endl;
+        LSHData->numberOfHyperplanes = DEF_K;
+        word = "";
+        while ((ch = getchar()) != '\n')
+            word += ch;
+        if (word == "")
+            std::cout << "Using Default Value of k = " << LSHData->numberOfHyperplanes << endl;
+        else
+            LSHData->numberOfHyperplanes = stoi(word);
+    }
+    if (std::find(found.begin(), found.end(), "l") == found.end()) // if not found inputFile
+    {
+        std::cout << "Please give L: Press [ENTER] for default value or type the desired value." << std::endl;
+        LSHData->intL = DEF_L;
+        word = "";
+        while ((ch = getchar()) != '\n')
+            word += ch;
+        if (word == "")
+            std::cout << "Using Default Value of L = " << LSHData->intL << endl;
+        else
+            LSHData->intL = stoi(word);
+    }
+    if (std::find(found.begin(), found.end(), "n") == found.end()) // if not found inputFile
+    {
+        std::cout << "Please give N: Press [ENTER] for default value or type the desired value." << std::endl;
+        LSHData->numberOfNearest = DEF_N;
+        word = "";
+        while ((ch = getchar()) != '\n')
+            word += ch;
+        if (word == "")
+            std::cout << "Using Default Value of N = " << LSHData->numberOfNearest << endl;
+        else
+            LSHData->numberOfNearest = stoi(word);
+    }
+    if (std::find(found.begin(), found.end(), "r") == found.end()) // if not found inputFile
+    {
+        std::cout << "Please give R: Press [ENTER] for default value or type the desired value." << std::endl;
+        LSHData->radius = DEF_R;
+        word = "";
+        while ((ch = getchar()) != '\n')
+            word += ch;
+        if (word == "")
+            std::cout << "Using Default Value of radius = " << LSHData->radius << endl;
+        else
+            LSHData->radius = stoi(word);
+    }
+
+    if (LSHData->inputFileName.empty() || LSHData->outputFileName.empty() || LSHData->queryFileName.empty())
+    {
+        cerr << "Arguments must contain all input file, output file and query file. The rest of the arguments are optional"
+             << std::endl;
+        delete LSHData;
+        return NULL;
+    }
+    return LSHData;
+}
+
+int writeToOutput(inputData *LSHData,
+                  std::vector<PointPtr> queryPoints,
+                  vector<kNeighboursPtr> queryOutputData,
+                  vector<kNeighboursPtr> queryTrueNeighbors,
+                  vector<vector<PointPtr>> queryRangeSearch,
+                  vector<double> tLSH,
+                  vector<double> tTrue)
+{
+    ofstream outputFile(LSHData->outputFileName);
+    if (!outputFile.is_open())
+    {
+        cerr << "Could not open the file: '"
+             << LSHData->outputFileName << "'"
+             << std::endl;
+        return EXIT_FAILURE;
+    }
+
+    for (int i = 0; i < queryPoints.size(); i++)
+    {
+        outputFile << "Query: "
+                   << queryPoints[i]->id << std::endl;
+
+        for (int j = 0; j < queryOutputData[i]->size; j++)
+        {
+            outputFile << "Nearest neighbor-"
+                       << j + 1 << ": " << queryOutputData[i]->neighbours[j]->point->id << std::endl
+                       << "distanceLSH: " << queryOutputData[i]->neighbours[j]->dist << std::endl;
+            if (LSHData->distance_true_visible)
+            {
+                outputFile << "True Nearest neighbor-"
+                           << j + 1 << ": " << queryTrueNeighbors[i]->neighbours[j]->point->id << std::endl;
+            }
+            outputFile << "distanceTrue: " << queryTrueNeighbors[i]->neighbours[j]->dist << std::endl;
+        }
+
+        outputFile << "tLSH: " << (double)(tLSH[i] / 1000) << 's' << std::endl
+                   << "tTrue: " << (double)(tTrue[i] / 1000) << 's' << std::endl
+                   << "R-near neighbors:" << std::endl;
+        for (int j = 0; j < queryRangeSearch[i].size(); j++)
+            outputFile << queryRangeSearch[i][j]->id << std::endl;
+        outputFile << std::endl
+                   << std::endl;
+    }
+    outputFile.close();
+    return EXIT_SUCCESS;
+}
+
+void deleteData(std::vector<PointPtr> *inputPoints,
+                std::vector<PointPtr> *queryPoints,
+                vector<vector<Neighbour> *> *k_nearest_neighbours,
+                vector<kNeighboursPtr> *queryOutputData,
+                vector<kNeighboursPtr> *queryTrueNeighbors)
+{
+    for (int i = 0; i < inputPoints->size(); i++)
+    {
+        delete (*inputPoints)[i];
+        if (i < queryPoints->size()) // Query points will always be <= input points, so this is safe
+        {
+            delete (*queryPoints)[i];
+            delete (*k_nearest_neighbours)[i];
+            for (int j = 0; j < (*queryOutputData)[i]->size; j++)
+            {
+                delete (*queryOutputData)[i]->neighbours[j];
+            }
+            delete (*queryOutputData)[i];
+
+            for (int j = 0; j < (*queryTrueNeighbors)[i]->size; j++)
+            {
+                delete (*queryTrueNeighbors)[i]->neighbours[j];
+            }
+            delete (*queryTrueNeighbors)[i];
+        }
+    }
 }
