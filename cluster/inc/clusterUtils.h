@@ -2,17 +2,10 @@
 #define _CLUSTER_UTILS_H_
 #include <string>
 #include <vector>
-#include "hashTable.h"
+#include "../../lib/mathUtils.h"
+#include "../../lib/projectUtils.h"
 
-// typedef struct PointStruct *PointPtr;
 typedef struct ClusterStruct *ClusterPtr;
-
-// typedef struct PointStruct
-// {
-//     std::string id;
-//     std::vector<double> coords;
-// } Point;
-
 typedef struct ClusterStruct
 {
     PointPtr centroidPoint;
@@ -20,7 +13,6 @@ typedef struct ClusterStruct
     int size;
     double silhouette;
 } Cluster;
-
 
 typedef struct ClusterDataStruct
 {

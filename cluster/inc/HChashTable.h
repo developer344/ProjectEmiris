@@ -1,16 +1,15 @@
-#ifndef _HASH_TABLE_H_
-#define _HASH_TABLE_H_
+#ifndef _HC_HASHTABLE_H__
+#define _HC_HASHTABLE_H__
 
 #include <stdlib.h>
-#include <vector>
 #include <string>
-#include <random>
+#include <vector>
 
 #include "../../lib/projectUtils.h"
 
-// #define BIGM (4294967291)
-// #define W (3)
 // using namespace std;
+
+// #define W (3)
 
 // typedef struct PointStruct *PointPtr;
 // typedef struct BucketStruct *BucketPtr;
@@ -19,15 +18,13 @@
 
 // typedef struct PointStruct
 // {
-//     string id;
+//     std::string id;
 //     std::vector<double> coords;
 // } Point;
 
 // typedef struct BucketStruct
 // {
 //     std::vector<PointPtr> points;
-//     std::vector<long int> ID;
-
 // } Bucket;
 
 // typedef struct NeighbourStruct
@@ -51,43 +48,42 @@
 //     }
 // };
 
-// struct BY_ID_INT
-// {
-//     // Source: https://stackoverflow.com/questions/2999135/how-can-i-sort-the-vector-elements-using-members-as-the-key-in-c
-//     bool operator()(PointPtr const &a, PointPtr const &b) const
-//     {
-//         return stoi(a->id) < stoi(b->id);
-//     }
-// };
-
-typedef struct LSHinputDataStruct
+typedef struct HCinputDataStruct
 {
     std::string inputFileName;
     std::string queryFileName;
     std::string outputFileName;
-    int numberOfHyperplanes; // numberOfHyperplanes
-    int intL;
+    int projectionDimension;
+    int maxCandidatePoints;
+    int probes;
     int numberOfNearest;
     int radius;
     int dimension;
-} LSHinputData;
+} HCinputData;
 
-class HashTables
+class HChashTable
 {
 private:
-    int numOfHashTables;
-    int numberOfHyperplanes, numberOfPoints, TableSize, dim;
-    std::vector<std::vector<Bucket>> hash_tables;
-    std::vector<std::vector<int>> ri; // r=(-100,100)
-    std::vector<std::vector<double>> t;
-    std::vector<std::vector<std::vector<double>>> v;
+    std::vector<Bucket *> Table;
+    std::vector<int> ri; // r=(-100,100)
+    std::vector<double> t;
+    std::vector<std::vector<double>> v;
+    int dimension;
+    int projectionDimension;
+    int probes;
+    int maxcandidatesPoints;
+    unsigned long bucketCount;
 
 public:
-    HashTables(int L, int numberOfHyperplanes, int numberOfPoints, int dimension, int tableSize); // Constructor
-    void InsertPoint(PointPtr point);
-    int HashFunc(PointPtr point, int hashtableId);
-    void PrintHashTables();
+    HChashTable(int dimension,
+                int projectionDimension,
+                int probes,
+                int maxcandidatesPoints);
+    ~HChashTable();
+    void InsertPoint(PointPtr p);
+    unsigned long HashFunc(PointPtr point);
     kNeighboursPtr find_k_nearest_neighbours(PointPtr queryPoint, int k_neighbours);
+    std::vector<unsigned long> *find_n_hamming_distance(unsigned long currBucketValue, int hammingDistance);
     std::vector<PointPtr> range_search(PointPtr queryPoint, double range, std::vector<std::string> *foundPoints = NULL);
 };
 
