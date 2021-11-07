@@ -11,8 +11,10 @@
 
 #include "clusterUtils.h"
 #include "kMeans.h"
-#include "mathUtils.h"
 #include "methods.h"
+
+#include "../../lib/mathUtils.h"
+#include "../../lib/projectUtils.h"
 
 #define DEF_VECTOR_HASH_TABLES 3
 #define DEF_VECTOR_HASH_FUNCTIONS 4
@@ -289,8 +291,7 @@ int main(int argc, char **argv)
     else if (CLData.method == LSH_METHOD)
         lsh_method(&centroidPoints, &clusters, &inputPoints, &CLData, numOfPoints);
     else if (CLData.method == HYPERCUBE_METHOD)
-        // index = lloyd_method(centroidPoints, inputPoints[i], CLData.dimension)
-        ;
+        hyperCube_method(&centroidPoints, &clusters, &inputPoints, &CLData, numOfPoints);
     auto cluster_end = std::chrono::high_resolution_clock::now();
     int tCluster = std::chrono::duration_cast<std::chrono::milliseconds>(cluster_end - cluster_start).count();
 

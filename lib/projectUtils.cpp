@@ -1,6 +1,5 @@
-#include "lshUtils.h"
-
-using namespace std;
+#include "projectUtils.h"
+#include "mathUtils.h"
 
 void sort_neighbours(kNeighboursPtr k_nearest_neighbours, int k_neighbours) // sort distance in a vector of k distances
 {
@@ -18,7 +17,7 @@ void sort_neighbours(kNeighboursPtr k_nearest_neighbours, int k_neighbours) // s
     }
 }
 
-void sort_points(vector<PointPtr> *Data) // sort distance in a vector of k distances
+void sort_points(std::vector<PointPtr> *Data) // sort distance in a vector of k distances
 {
     int k = Data->size();
     PointPtr tempPoint;
@@ -33,7 +32,22 @@ void sort_points(vector<PointPtr> *Data) // sort distance in a vector of k dista
     }
 }
 
-int notAlreadyExists(kNeighboursPtr k_nearest_neighbours, string pointID)
+void sort_points_str(std::vector<std::string> *Data)
+{
+    int k = Data->size();
+    std::string tempPoint;
+    for (int i = k - 1; i > 0; i--)
+    {
+        if ((*Data)[i] < (*Data)[i - 1])
+        {
+            tempPoint = (*Data)[i];
+            (*Data)[i] = (*Data)[i - 1];
+            (*Data)[i - 1] = tempPoint;
+        }
+    }
+}
+
+int notAlreadyExists(kNeighboursPtr k_nearest_neighbours, std::string pointID)
 {
 
     for (int i = 0; i < k_nearest_neighbours->size; i++)
@@ -42,16 +56,12 @@ int notAlreadyExists(kNeighboursPtr k_nearest_neighbours, string pointID)
     return 1;
 }
 
-kNeighboursPtr find_k_true_neighbours(PointPtr queryPoint, int k_neighbours, vector<PointPtr> inputPoints, int dimension)
+kNeighboursPtr find_k_true_neighbours(PointPtr queryPoint, int k_neighbours, std::vector<PointPtr> inputPoints, int dim)
 {
-    // PointPtr curPoint;
-    // int curDist;
-
     NeighbourPtr currNeighbour = new Neighbour;
-
     kNeighboursPtr returnData = new kNeighbours;
+
     returnData->neighbours.resize(k_neighbours);
-    // returnData->size = 0;
     returnData->size = k_neighbours;
 
     for (int i = 0; i < k_neighbours; i++)
@@ -64,7 +74,7 @@ kNeighboursPtr find_k_true_neighbours(PointPtr queryPoint, int k_neighbours, vec
     for (int i = 0; i < inputPoints.size(); i++)
     {
         currNeighbour->point = inputPoints[i];
-        currNeighbour->dist = euclideanDistance(queryPoint, currNeighbour->point, dimension);
+        currNeighbour->dist = euclideanDistance(queryPoint, currNeighbour->point, dim);
 
         if (currNeighbour->dist < returnData->neighbours[k_neighbours - 1]->dist && currNeighbour->dist > 0)
         {
@@ -80,4 +90,11 @@ kNeighboursPtr find_k_true_neighbours(PointPtr queryPoint, int k_neighbours, vec
 
     delete currNeighbour;
     return returnData;
+}
+
+// maps an integer value (h) to 0 or 1
+bool mapFunction(int h, int i)
+{
+    int ret = euclideanModulo(h, i * 10);
+    return ret > i * 5 ? true : false;
 }

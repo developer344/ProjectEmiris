@@ -1,5 +1,4 @@
 #include "kMeans.h"
-#include "mathUtils.h"
 
 // Input: Vector of all input Points
 // Output: Vector of k centroid points

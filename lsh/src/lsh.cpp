@@ -34,7 +34,8 @@ int main(int argc, char **argv)
         vector<PointPtr> inputPoints;
         LSHData->dimension = get_points(inputLines, &inputPoints);
 
-        std::cout << "Dimension: " << LSHData->dimension;
+        std::cout << "Dimension: " << LSHData->dimension << std::endl
+                  << std::endl;
 
         int numOfInputPoints = inputPoints.size();
         HashTables HashTablesObject(LSHData->intL, LSHData->numberOfHyperplanes, numOfInputPoints, LSHData->dimension, numOfInputPoints / 4);
