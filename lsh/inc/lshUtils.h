@@ -41,5 +41,5 @@ void deleteData(std::vector<PointPtr> *inputPoints,
                 vector<vector<Neighbour> *> *k_nearest_neighbours,
                 vector<kNeighboursPtr> *queryOutputData,
                 vector<kNeighboursPtr> *queryTrueNeighbors);
-
+std::string checkRerun();
 #endif

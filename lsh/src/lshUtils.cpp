@@ -367,3 +367,23 @@ void deleteData(std::vector<PointPtr> *inputPoints,
         }
     }
 }
+
+std::string checkRerun()
+{
+    std::cout << "Rerun Program?..." << std::endl
+              << "======Options======" << std::endl
+              << "CONT to rerun" << std::endl
+              << "TERM to terminate" << std::endl
+              << "===================" << std::endl;
+    std::string option;
+    char ch;
+    while (true)
+    {
+        option = "";
+        while ((ch = getchar()) != '\n')
+            option += ch;
+        if (option == "CONT" || option == "TERM" || option == "cont" || option == "term")
+            break;
+    }
+    return option;
+}

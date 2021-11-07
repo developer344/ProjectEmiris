@@ -1,9 +1,11 @@
-#include "hypercubeUtils.h"
+#include <iostream>
 #include <time.h>
 #include <algorithm>
 #include <stdlib.h>
 #include <fstream>
 #include <random>
+
+#include "hypercubeUtils.h"
 
 using namespace std;
 
@@ -165,166 +167,166 @@ inputData *getInputData(int *argc, char **argv)
 
     inputData *HCData = new inputData;
     vector<std::string> found;
-        bool distance_true_visible = false;
+    bool distance_true_visible = false;
 
-        for (int i = 0; i < *argc; i++)
-        {
+    for (int i = 0; i < *argc; i++)
+    {
 
-            if (std::string(argv[i]) == "-i")
-            {
-                HCData->inputFileName = std::string(argv[i + 1]);
-                std::cout << HCData->inputFileName << std::endl;
-                found.push_back("inputFile");
-            }
-            else if (std::string(argv[i]) == "-q")
-            {
-                HCData->queryFileName = std::string(argv[i + 1]);
-                std::cout << HCData->queryFileName << std::endl;
-                found.push_back("queryFile");
-            }
-            else if (std::string(argv[i]) == "-o")
-            {
-                HCData->outputFileName = std::string(argv[i + 1]);
-                std::cout << HCData->outputFileName << std::endl;
-                found.push_back("outputFile");
-            }
-            else if (std::string(argv[i]) == "-k")
-            {
-                HCData->projectionDimension = atoi(argv[i + 1]);
-                std::cout << HCData->projectionDimension << std::endl;
-                found.push_back("k");
-            }
-            else if (std::string(argv[i]) == "-M")
-            {
-                HCData->maxCandidatePoints = atoi(argv[i + 1]);
-                std::cout << HCData->maxCandidatePoints << std::endl;
-                found.push_back("m");
-            }
-            else if (std::string(argv[i]) == "-N")
-            {
-                HCData->numberOfNearest = atoi(argv[i + 1]);
-                std::cout << HCData->numberOfNearest << std::endl;
-                found.push_back("n");
-            }
-            else if (std::string(argv[i]) == "-probes")
-            {
-                HCData->probes = atoi(argv[i + 1]);
-                std::cout << HCData->probes << std::endl;
-                found.push_back("probes");
-            }
-            else if (std::string(argv[i]) == "-R")
-            {
-                HCData->radius = atoi(argv[i + 1]);
-                std::cout << HCData->radius << std::endl;
-                found.push_back("r");
-            }
-            else if (std::string(argv[i]) == "--dist-true=visible")
-            {
-                distance_true_visible = true;
-            }
+        if (std::string(argv[i]) == "-i")
+        {
+            HCData->inputFileName = std::string(argv[i + 1]);
+            std::cout << HCData->inputFileName << std::endl;
+            found.push_back("inputFile");
         }
+        else if (std::string(argv[i]) == "-q")
+        {
+            HCData->queryFileName = std::string(argv[i + 1]);
+            std::cout << HCData->queryFileName << std::endl;
+            found.push_back("queryFile");
+        }
+        else if (std::string(argv[i]) == "-o")
+        {
+            HCData->outputFileName = std::string(argv[i + 1]);
+            std::cout << HCData->outputFileName << std::endl;
+            found.push_back("outputFile");
+        }
+        else if (std::string(argv[i]) == "-k")
+        {
+            HCData->projectionDimension = atoi(argv[i + 1]);
+            std::cout << HCData->projectionDimension << std::endl;
+            found.push_back("k");
+        }
+        else if (std::string(argv[i]) == "-M")
+        {
+            HCData->maxCandidatePoints = atoi(argv[i + 1]);
+            std::cout << HCData->maxCandidatePoints << std::endl;
+            found.push_back("m");
+        }
+        else if (std::string(argv[i]) == "-N")
+        {
+            HCData->numberOfNearest = atoi(argv[i + 1]);
+            std::cout << HCData->numberOfNearest << std::endl;
+            found.push_back("n");
+        }
+        else if (std::string(argv[i]) == "-probes")
+        {
+            HCData->probes = atoi(argv[i + 1]);
+            std::cout << HCData->probes << std::endl;
+            found.push_back("probes");
+        }
+        else if (std::string(argv[i]) == "-R")
+        {
+            HCData->radius = atoi(argv[i + 1]);
+            std::cout << HCData->radius << std::endl;
+            found.push_back("r");
+        }
+        else if (std::string(argv[i]) == "--dist-true=visible")
+        {
+            distance_true_visible = true;
+        }
+    }
 
-        //-----------------------------------------------------------------------------------------//
+    //-----------------------------------------------------------------------------------------//
 
-        char ch;
-        string word = "";
+    char ch;
+    string word = "";
 
-        *argc = 1;
+    *argc = 1;
 
-        found.push_back(" ");
-        std::string input = {};
+    found.push_back(" ");
+    std::string input = {};
 
-        if (std::find(found.begin(), found.end(), "inputFile") == found.end()) // if not found inputFile
-        {
-            std::cout << "Please give input file name" << std::endl;
+    if (std::find(found.begin(), found.end(), "inputFile") == found.end()) // if not found inputFile
+    {
+        std::cout << "Please give input file name" << std::endl;
 
-            while ((ch = getchar()) != '\n')
-                word += ch;
-            HCData->inputFileName = word;
-        }
-        if (std::find(found.begin(), found.end(), "queryFile") == found.end()) // if not found queryFile
-        {
-            std::cout << "Please give query file name" << std::endl;
+        while ((ch = getchar()) != '\n')
+            word += ch;
+        HCData->inputFileName = word;
+    }
+    if (std::find(found.begin(), found.end(), "queryFile") == found.end()) // if not found queryFile
+    {
+        std::cout << "Please give query file name" << std::endl;
 
-            while ((ch = getchar()) != '\n')
-                word += ch;
-            HCData->queryFileName = word;
-        }
-        if (std::find(found.begin(), found.end(), "outputFile") == found.end()) // if not found outputFile
-        {
-            std::cout << "Please give output file name" << std::endl;
+        while ((ch = getchar()) != '\n')
+            word += ch;
+        HCData->queryFileName = word;
+    }
+    if (std::find(found.begin(), found.end(), "outputFile") == found.end()) // if not found outputFile
+    {
+        std::cout << "Please give output file name" << std::endl;
 
-            while ((ch = getchar()) != '\n')
-                word += ch;
-            HCData->outputFileName = word;
-        }
-        if (std::find(found.begin(), found.end(), "k") == found.end()) // if not found inputFile
-        {
-            std::cout << "Please give k: Press [ENTER] for default value or type the desired value." << std::endl;
-            HCData->projectionDimension = DEF_K;
-            word = "";
-            while ((ch = getchar()) != '\n')
-                word += ch;
-            if (word == "")
-                std::cout << "Using Default Value of k = " << HCData->projectionDimension << endl;
-            else
-                HCData->projectionDimension = stoi(word);
-        }
-        if (std::find(found.begin(), found.end(), "m") == found.end()) // if not found inputFile
-        {
-            std::cout << "Please give M: Press [ENTER] for default value or type the desired value." << std::endl;
-            HCData->maxCandidatePoints = DEF_M;
-            word = "";
-            while ((ch = getchar()) != '\n')
-                word += ch;
-            if (word == "")
-                std::cout << "Using Default Value of M = " << HCData->maxCandidatePoints << endl;
-            else
-                HCData->maxCandidatePoints = stoi(word);
-        }
-        if (std::find(found.begin(), found.end(), "probes") == found.end()) // if not found inputFile
-        {
-            std::cout << "Please give number of probes: Press [ENTER] for default value or type the desired value." << std::endl;
-            HCData->probes = DEF_PROBES;
-            word = "";
-            while ((ch = getchar()) != '\n')
-                word += ch;
-            if (word == "")
-                std::cout << "Using Default Value of probes = " << HCData->probes << endl;
-            else
-                HCData->probes = stoi(word);
-        }
-        if (std::find(found.begin(), found.end(), "n") == found.end()) // if not found inputFile
-        {
-            std::cout << "Please give N: Press [ENTER] for default value or type the desired value." << std::endl;
-            HCData->numberOfNearest = DEF_N;
-            word = "";
-            while ((ch = getchar()) != '\n')
-                word += ch;
-            if (word == "")
-                std::cout << "Using Default Value of N = " << HCData->numberOfNearest << endl;
-            else
-                HCData->numberOfNearest = stoi(word);
-        }
-        if (std::find(found.begin(), found.end(), "r") == found.end()) // if not found inputFile
-        {
-            std::cout << "Please give R: Press [ENTER] for default value or type the desired value." << std::endl;
-            HCData->radius = DEF_R;
-            word = "";
-            while ((ch = getchar()) != '\n')
-                word += ch;
-            if (word == "")
-                std::cout << "Using Default Value of radius = " << HCData->radius << endl;
-            else
-                HCData->radius = stoi(word);
-        }
-        ///////////////////////////////////////////////////////////////////////////////////////////////////////
-        if (HCData->inputFileName.empty() || HCData->outputFileName.empty() || HCData->queryFileName.empty())
-        {
-            cerr << "Arguments must contain all input file, output file and query file. The rest of the arguments are optional"
-                 << std::endl;
-            return NULL;
-        }
+        while ((ch = getchar()) != '\n')
+            word += ch;
+        HCData->outputFileName = word;
+    }
+    if (std::find(found.begin(), found.end(), "k") == found.end()) // if not found inputFile
+    {
+        std::cout << "Please give k: Press [ENTER] for default value or type the desired value." << std::endl;
+        HCData->projectionDimension = DEF_K;
+        word = "";
+        while ((ch = getchar()) != '\n')
+            word += ch;
+        if (word == "")
+            std::cout << "Using Default Value of k = " << HCData->projectionDimension << endl;
+        else
+            HCData->projectionDimension = stoi(word);
+    }
+    if (std::find(found.begin(), found.end(), "m") == found.end()) // if not found inputFile
+    {
+        std::cout << "Please give M: Press [ENTER] for default value or type the desired value." << std::endl;
+        HCData->maxCandidatePoints = DEF_M;
+        word = "";
+        while ((ch = getchar()) != '\n')
+            word += ch;
+        if (word == "")
+            std::cout << "Using Default Value of M = " << HCData->maxCandidatePoints << endl;
+        else
+            HCData->maxCandidatePoints = stoi(word);
+    }
+    if (std::find(found.begin(), found.end(), "probes") == found.end()) // if not found inputFile
+    {
+        std::cout << "Please give number of probes: Press [ENTER] for default value or type the desired value." << std::endl;
+        HCData->probes = DEF_PROBES;
+        word = "";
+        while ((ch = getchar()) != '\n')
+            word += ch;
+        if (word == "")
+            std::cout << "Using Default Value of probes = " << HCData->probes << endl;
+        else
+            HCData->probes = stoi(word);
+    }
+    if (std::find(found.begin(), found.end(), "n") == found.end()) // if not found inputFile
+    {
+        std::cout << "Please give N: Press [ENTER] for default value or type the desired value." << std::endl;
+        HCData->numberOfNearest = DEF_N;
+        word = "";
+        while ((ch = getchar()) != '\n')
+            word += ch;
+        if (word == "")
+            std::cout << "Using Default Value of N = " << HCData->numberOfNearest << endl;
+        else
+            HCData->numberOfNearest = stoi(word);
+    }
+    if (std::find(found.begin(), found.end(), "r") == found.end()) // if not found inputFile
+    {
+        std::cout << "Please give R: Press [ENTER] for default value or type the desired value." << std::endl;
+        HCData->radius = DEF_R;
+        word = "";
+        while ((ch = getchar()) != '\n')
+            word += ch;
+        if (word == "")
+            std::cout << "Using Default Value of radius = " << HCData->radius << endl;
+        else
+            HCData->radius = stoi(word);
+    }
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////
+    if (HCData->inputFileName.empty() || HCData->outputFileName.empty() || HCData->queryFileName.empty())
+    {
+        cerr << "Arguments must contain all input file, output file and query file. The rest of the arguments are optional"
+             << std::endl;
+        return NULL;
+    }
     return HCData;
 }
 
@@ -333,7 +335,7 @@ int writeToOutput(inputData *HCData,
                   vector<kNeighboursPtr> queryOutputData,
                   vector<kNeighboursPtr> queryTrueNeighbors,
                   vector<vector<PointPtr>> queryRangeSearch,
-                  vector<double> tLSH,
+                  vector<double> tCube,
                   vector<double> tTrue)
 {
     ofstream outputFile(HCData->outputFileName);
@@ -354,7 +356,7 @@ int writeToOutput(inputData *HCData,
         {
             outputFile << "Nearest neighbor-"
                        << j + 1 << ": " << queryOutputData[i]->neighbours[j]->point->id << std::endl
-                       << "distanceLSH: " << queryOutputData[i]->neighbours[j]->dist << std::endl;
+                       << "distanceHypercube: " << queryOutputData[i]->neighbours[j]->dist << std::endl;
             if (HCData->distance_true_visible)
             {
                 outputFile << "True Nearest neighbor-"
@@ -363,7 +365,7 @@ int writeToOutput(inputData *HCData,
             outputFile << "distanceTrue: " << queryTrueNeighbors[i]->neighbours[j]->dist << std::endl;
         }
 
-        outputFile << "tLSH: " << (double)(tLSH[i] / 1000) << 's' << std::endl
+        outputFile << "tCube: " << (double)(tCube[i] / 1000) << 's' << std::endl
                    << "tTrue: " << (double)(tTrue[i] / 1000) << 's' << std::endl
                    << "R-near neighbors:" << std::endl;
         for (int j = 0; j < queryRangeSearch[i].size(); j++)
@@ -401,4 +403,24 @@ void deleteData(std::vector<PointPtr> *inputPoints,
             delete (*queryTrueNeighbors)[i];
         }
     }
+}
+
+std::string checkRerun()
+{
+    std::cout << "Rerun Program?..." << std::endl
+              << "======Options======" << std::endl
+              << "CONT to rerun" << std::endl
+              << "TERM to terminate" << std::endl
+              << "===================" << std::endl;
+    std::string option;
+    char ch;
+    while (true)
+    {
+        option = "";
+        while ((ch = getchar()) != '\n')
+            option += ch;
+        if (option == "CONT" || option == "TERM" || option == "cont" || option == "term")
+            break;
+    }
+    return option;
 }

@@ -23,14 +23,16 @@ int main(int argc, char **argv)
                   << std::endl
                   << "STARTING" << std::endl;
 
-        // Getting arguments
+        // Reading arguments
         inputData *LSHData = getInputData(&argc, argv);
         if (LSHData == NULL)
             return EXIT_FAILURE;
 
         // Opening inputFile
+        cout << "Reading input file " << LSHData->inputFileName << "..." << endl;
         vector<std::string> inputLines = get_lines(LSHData->inputFileName);
 
+        // Getting points from lines
         vector<PointPtr> inputPoints;
         LSHData->dimension = get_points(inputLines, &inputPoints);
 
@@ -41,18 +43,19 @@ int main(int argc, char **argv)
         HashTables HashTablesObject(LSHData->intL, LSHData->numberOfHyperplanes, numOfInputPoints, LSHData->dimension, numOfInputPoints / 4);
 
         // Inserting points to hash table
+        std::cout << "Inserting items to hash table..." << std::endl;
         for (int i = 0; i < inputPoints.size(); i++)
             HashTablesObject.HashTables::InsertPoint(inputPoints[i]);
 
         // Getting lines from query file
+        cout << "Reading query file " << LSHData->queryFileName << "..." << endl;
         vector<std::string> queryLines = get_lines(LSHData->queryFileName);
 
-        // Creating points from Lines
+        // Getting points from lines
         vector<PointPtr> queryPoints;
         get_points(queryLines, &queryPoints);
 
         // LSH k nearest neighbor search
-        std::cout << "Executing LSH search algorithm..." << std::endl;
         vector<vector<Neighbour> *> k_nearest_neighbours;
         k_nearest_neighbours.resize(queryLines.size());
 
@@ -61,6 +64,8 @@ int main(int argc, char **argv)
 
         vector<double> tLSH;
         tLSH.resize(queryLines.size());
+
+        std::cout << "Executing LSH search algorithm..." << std::endl;
 
         for (int i = 0; i < queryLines.size(); i++)
         {
@@ -72,13 +77,13 @@ int main(int argc, char **argv)
         }
 
         // Brute force k nearest neighbor search
-        std::cout << "Executing brute-force search algorithm..." << std::endl;
-
         vector<kNeighboursPtr> queryTrueNeighbors;
         queryTrueNeighbors.resize(queryLines.size());
 
         vector<double> tTrue;
         tTrue.resize(queryLines.size());
+
+        std::cout << "Executing brute-force search algorithm..." << std::endl;
 
         for (int i = 0; i < queryLines.size(); i++)
         {
@@ -106,21 +111,7 @@ int main(int argc, char **argv)
         // Deleting Data Structures
         deleteData(&inputPoints, &queryPoints, &k_nearest_neighbours, &queryOutputData, &queryTrueNeighbors);
 
-        std::cout << "Rerun Program?..." << std::endl
-                  << "======Options======" << std::endl
-                  << "CONT to rerun" << std::endl
-                  << "TERM to terminate" << std::endl
-                  << "===================" << std::endl;
-        while (true)
-        {
-
-            option = "";
-            char ch;
-            while ((ch = getchar()) != '\n')
-                option += ch;
-            if (option == "CONT" || option == "TERM" || option == "cont" || option == "term")
-                break;
-        }
+        option = checkRerun();
     }
     return EXIT_SUCCESS;
 }
