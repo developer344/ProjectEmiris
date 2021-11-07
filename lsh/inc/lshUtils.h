@@ -2,7 +2,8 @@
 #define _LSH_UTILS_H_
 
 #include <string>
-#include "mathUtils.h"
+#include "../../lib/mathUtils.h"
+#include "../../lib/projectUtils.h"
 #include "hashTable.h"
 
 #define DEF_K 4
@@ -22,24 +23,17 @@ typedef struct inputDataStruct
     bool distance_true_visible;
 } inputData;
 
-std::vector<std::string> get_lines(std::string fileName);
-int get_points(vector<std::string> linesVector, vector<PointPtr> *pointVector);
-void sort_neighbours(kNeighboursPtr k_nearest_neighbours, int k_neighbours);
-void sort_points(vector<PointPtr> *Data);
-int notAlreadyExists(kNeighboursPtr k_nearest_neighbours, string pointID);
-kNeighboursPtr find_k_true_neighbours(PointPtr queryPoint, int k_neighbours, vector<PointPtr> inputPoints, int dimension);
 inputData *getInputData(int *argc, char **argv);
 int writeToOutput(inputData *LSHData,
                   std::vector<PointPtr> queryPoints,
-                  vector<kNeighboursPtr> queryOutputData,
-                  vector<kNeighboursPtr> queryTrueNeighbors,
-                  vector<vector<PointPtr>> queryRangeSearch,
-                  vector<double> tLSH,
-                  vector<double> tTrue);
+                  std::vector<kNeighboursPtr> queryOutputData,
+                  std::vector<kNeighboursPtr> queryTrueNeighbors,
+                  std::vector<std::vector<PointPtr>> queryRangeSearch,
+                  std::vector<double> tLSH,
+                  std::vector<double> tTrue);
 void deleteData(std::vector<PointPtr> *inputPoints,
                 std::vector<PointPtr> *queryPoints,
-                vector<vector<Neighbour> *> *k_nearest_neighbours,
-                vector<kNeighboursPtr> *queryOutputData,
-                vector<kNeighboursPtr> *queryTrueNeighbors);
-std::string checkRerun();
+                std::vector<std::vector<Neighbour> *> *k_nearest_neighbours,
+                std::vector<kNeighboursPtr> *queryOutputData,
+                std::vector<kNeighboursPtr> *queryTrueNeighbors);
 #endif

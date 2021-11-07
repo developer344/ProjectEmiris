@@ -1,5 +1,63 @@
+#include <fstream>
+
 #include "projectUtils.h"
 #include "mathUtils.h"
+
+std::vector<std::string> get_lines(std::string fileName)
+{
+    std::ifstream file(fileName);
+    if (!file.is_open())
+    {
+        std::cerr << "Could not open the file: '"
+                  << fileName << "'"
+                  << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+    std::cout << "Reading input file " << fileName << "..." << std::endl;
+    std::vector<std::string> inputLines;
+    std::string line;
+    while (std::getline(file, line))
+    {
+        inputLines.push_back(line);
+    }
+    file.close();
+    return inputLines;
+}
+
+int get_points(std::vector<std::string> linesVector, std::vector<PointPtr> *pointsVector)
+{
+    int dimension;
+    for (int i = 0; i < linesVector.size(); i++)
+    {
+        // separate std::string by Spaces
+        // pick every element from 2nd to std::endl
+        // read point coordinates
+        PointPtr currPoint = new Point;
+        std::string word = "";
+        dimension = 0;
+        for (char x : linesVector[i])
+        {
+            if (x == ' ')
+            {
+                if (dimension)
+                    currPoint->coords.push_back(atof(word.c_str()));
+                else
+                    currPoint->id = word;
+                word = "";
+
+                dimension++;
+            }
+            else
+            {
+                word = word + x;
+            }
+        }
+
+        pointsVector->push_back(currPoint);
+    }
+    dimension--;
+    return dimension;
+}
 
 void sort_neighbours(kNeighboursPtr k_nearest_neighbours, int k_neighbours) // sort distance in a vector of k distances
 {
@@ -97,4 +155,24 @@ bool mapFunction(int h, int i)
 {
     int ret = euclideanModulo(h, i * 10);
     return ret > i * 5 ? true : false;
+}
+
+std::string checkRerun()
+{
+    std::cout << "Rerun Program?..." << std::endl
+              << "======Options======" << std::endl
+              << "CONT to rerun" << std::endl
+              << "TERM to terminate" << std::endl
+              << "===================" << std::endl;
+    std::string option;
+    char ch;
+    while (true)
+    {
+        option = "";
+        while ((ch = getchar()) != '\n')
+            option += ch;
+        if (option == "CONT" || option == "TERM" || option == "cont" || option == "term")
+            break;
+    }
+    return option;
 }

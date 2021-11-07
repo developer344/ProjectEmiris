@@ -2,8 +2,8 @@
 #define _METHODS_H_
 
 #include <vector>
-#include "hashTable.h"
-#include "HChashTable.h"
+#include "../../lsh/inc/hashTable.h"
+#include "../../hypercube/inc/HChashTable.h"
 #include "clusterUtils.h"
 #include "../../lib/projectUtils.h"
 typedef struct duplStruct

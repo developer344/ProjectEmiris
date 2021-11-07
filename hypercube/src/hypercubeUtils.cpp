@@ -7,166 +7,11 @@
 
 #include "hypercubeUtils.h"
 
-using namespace std;
-
-std::vector<std::string> get_lines(std::string fileName)
-{
-    ifstream file(fileName);
-    if (!file.is_open())
-    {
-        std::cerr << "Could not open the file: '"
-                  << fileName << "'"
-                  << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
-    std::cout << "Reading input file " << fileName << "..." << std::endl;
-    std::vector<std::string> inputLines;
-    std::string line;
-    while (getline(file, line))
-    {
-        inputLines.push_back(line);
-    }
-    file.close();
-    return inputLines;
-}
-
-int get_points(vector<std::string> linesVector, vector<PointPtr> *pointsVector)
-{
-    int dimension;
-    for (int i = 0; i < linesVector.size(); i++)
-    {
-        // separate std::string by Spaces
-        // pick every element from 2nd to std::endl
-        // read point coordinates
-        PointPtr currPoint = new Point;
-        std::string word = "";
-        dimension = 0;
-        for (char x : linesVector[i])
-        {
-            if (x == ' ')
-            {
-                if (dimension)
-                    currPoint->coords.push_back(atof(word.c_str()));
-                else
-                    currPoint->id = word;
-                word = "";
-
-                dimension++;
-            }
-            else
-            {
-                word = word + x;
-            }
-        }
-
-        pointsVector->push_back(currPoint);
-    }
-    dimension--;
-    return dimension;
-}
-
-void sort_neighbours(kNeighboursPtr k_nearest_neighbours, int k_neighbours) // sort distance in a vector of k distances
-{
-    int k = k_neighbours; // number of neighbours
-    NeighbourPtr tempNeighbour;
-
-    for (int i = k - 1; i > 0; i--)
-    {
-        if (k_nearest_neighbours->neighbours[i]->dist < k_nearest_neighbours->neighbours[i - 1]->dist)
-        {
-            tempNeighbour = k_nearest_neighbours->neighbours[i - 1];
-            k_nearest_neighbours->neighbours[i - 1] = k_nearest_neighbours->neighbours[i];
-            k_nearest_neighbours->neighbours[i] = tempNeighbour;
-        }
-    }
-}
-
-void sort_points(std::vector<PointPtr> *Data) // sort distance in a vector of k distances
-{
-    int k = Data->size();
-    PointPtr tempPoint;
-    for (int i = k - 1; i > 0; i--)
-    {
-        if ((*Data)[i]->id < (*Data)[i - 1]->id)
-        {
-            tempPoint = (*Data)[i];
-            (*Data)[i] = (*Data)[i - 1];
-            (*Data)[i - 1] = tempPoint;
-        }
-    }
-}
-
-int notAlreadyExists(kNeighboursPtr k_nearest_neighbours, std::string pointID)
-{
-
-    for (int i = 0; i < k_nearest_neighbours->size; i++)
-        if (k_nearest_neighbours->neighbours[i]->point->id == pointID)
-            return 0;
-    return 1;
-}
-
-kNeighboursPtr find_k_true_neighbours(PointPtr queryPoint, int k_neighbours, std::vector<PointPtr> inputPoints, int dim)
-{
-    // PointPtr curPoint;
-    // int curDist;
-
-    NeighbourPtr currNeighbour = new Neighbour;
-
-    kNeighboursPtr returnData = new kNeighbours;
-    returnData->neighbours.resize(k_neighbours);
-    // returnData->size = 0;
-    returnData->size = k_neighbours;
-
-    for (int i = 0; i < k_neighbours; i++)
-    {
-        returnData->neighbours[i] = new Neighbour;
-        returnData->neighbours[i]->point = NULL;
-        returnData->neighbours[i]->dist = INT32_MAX; // initialize distance with a very big value
-    }
-
-    for (int i = 0; i < inputPoints.size(); i++)
-    {
-        currNeighbour->point = inputPoints[i];
-        currNeighbour->dist = euclideanDistance(queryPoint, currNeighbour->point, dim);
-
-        if (currNeighbour->dist < returnData->neighbours[k_neighbours - 1]->dist && currNeighbour->dist > 0)
-        {
-            // if (returnData->size < k_neighbours)
-            //     returnData->size++;
-            returnData->neighbours[k_neighbours - 1]->point = currNeighbour->point;
-            returnData->neighbours[k_neighbours - 1]->dist = currNeighbour->dist;
-
-            if (k_neighbours > 1)
-                sort_neighbours(returnData, k_neighbours);
-        }
-    }
-
-    delete currNeighbour;
-    return returnData;
-}
-
-// maps an integer value (h) to 0 or 1
-bool mapFunction(int h, int i)
-{
-    // srand(time(NULL));
-    // int ret = euclideanModulo(h, rand() % 100);
-    // if (i % 2 == 0)
-    // {
-    //     return ret > rand() % 50 ? true : false;
-    // }
-    // else
-    //     return ret <= rand() % 50 ? true : false;
-
-    int ret = euclideanModulo(h, i * 10);
-
-    return ret > i * 5 ? true : false;
-}
-
 inputData *getInputData(int *argc, char **argv)
 {
 
     inputData *HCData = new inputData;
-    vector<std::string> found;
+    std::vector<std::string> found;
     bool distance_true_visible = false;
 
     for (int i = 0; i < *argc; i++)
@@ -229,7 +74,7 @@ inputData *getInputData(int *argc, char **argv)
     //-----------------------------------------------------------------------------------------//
 
     char ch;
-    string word = "";
+    std::string word = "";
 
     *argc = 1;
 
@@ -268,7 +113,7 @@ inputData *getInputData(int *argc, char **argv)
         while ((ch = getchar()) != '\n')
             word += ch;
         if (word == "")
-            std::cout << "Using Default Value of k = " << HCData->projectionDimension << endl;
+            std::cout << "Using Default Value of k = " << HCData->projectionDimension << std::endl;
         else
             HCData->projectionDimension = stoi(word);
     }
@@ -280,7 +125,7 @@ inputData *getInputData(int *argc, char **argv)
         while ((ch = getchar()) != '\n')
             word += ch;
         if (word == "")
-            std::cout << "Using Default Value of M = " << HCData->maxCandidatePoints << endl;
+            std::cout << "Using Default Value of M = " << HCData->maxCandidatePoints << std::endl;
         else
             HCData->maxCandidatePoints = stoi(word);
     }
@@ -292,7 +137,7 @@ inputData *getInputData(int *argc, char **argv)
         while ((ch = getchar()) != '\n')
             word += ch;
         if (word == "")
-            std::cout << "Using Default Value of probes = " << HCData->probes << endl;
+            std::cout << "Using Default Value of probes = " << HCData->probes << std::endl;
         else
             HCData->probes = stoi(word);
     }
@@ -304,7 +149,7 @@ inputData *getInputData(int *argc, char **argv)
         while ((ch = getchar()) != '\n')
             word += ch;
         if (word == "")
-            std::cout << "Using Default Value of N = " << HCData->numberOfNearest << endl;
+            std::cout << "Using Default Value of N = " << HCData->numberOfNearest << std::endl;
         else
             HCData->numberOfNearest = stoi(word);
     }
@@ -316,15 +161,15 @@ inputData *getInputData(int *argc, char **argv)
         while ((ch = getchar()) != '\n')
             word += ch;
         if (word == "")
-            std::cout << "Using Default Value of radius = " << HCData->radius << endl;
+            std::cout << "Using Default Value of radius = " << HCData->radius << std::endl;
         else
             HCData->radius = stoi(word);
     }
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
     if (HCData->inputFileName.empty() || HCData->outputFileName.empty() || HCData->queryFileName.empty())
     {
-        cerr << "Arguments must contain all input file, output file and query file. The rest of the arguments are optional"
-             << std::endl;
+        std::cerr << "Arguments must contain all input file, output file and query file. The rest of the arguments are optional"
+                  << std::endl;
         return NULL;
     }
     return HCData;
@@ -332,18 +177,18 @@ inputData *getInputData(int *argc, char **argv)
 
 int writeToOutput(inputData *HCData,
                   std::vector<PointPtr> queryPoints,
-                  vector<kNeighboursPtr> queryOutputData,
-                  vector<kNeighboursPtr> queryTrueNeighbors,
-                  vector<vector<PointPtr>> queryRangeSearch,
-                  vector<double> tCube,
-                  vector<double> tTrue)
+                  std::vector<kNeighboursPtr> queryOutputData,
+                  std::vector<kNeighboursPtr> queryTrueNeighbors,
+                  std::vector<std::vector<PointPtr>> queryRangeSearch,
+                  std::vector<double> tCube,
+                  std::vector<double> tTrue)
 {
-    ofstream outputFile(HCData->outputFileName);
+    std::ofstream outputFile(HCData->outputFileName);
     if (!outputFile.is_open())
     {
-        cerr << "Could not open the file: '"
-             << HCData->outputFileName << "'"
-             << std::endl;
+        std::cerr << "Could not open the file: '"
+                  << HCData->outputFileName << "'"
+                  << std::endl;
         return EXIT_FAILURE;
     }
 
@@ -379,9 +224,9 @@ int writeToOutput(inputData *HCData,
 
 void deleteData(std::vector<PointPtr> *inputPoints,
                 std::vector<PointPtr> *queryPoints,
-                vector<vector<Neighbour> *> *k_nearest_neighbours,
-                vector<kNeighboursPtr> *queryOutputData,
-                vector<kNeighboursPtr> *queryTrueNeighbors)
+                std::vector<std::vector<Neighbour> *> *k_nearest_neighbours,
+                std::vector<kNeighboursPtr> *queryOutputData,
+                std::vector<kNeighboursPtr> *queryTrueNeighbors)
 {
     for (int i = 0; i < inputPoints->size(); i++)
     {
@@ -403,24 +248,4 @@ void deleteData(std::vector<PointPtr> *inputPoints,
             delete (*queryTrueNeighbors)[i];
         }
     }
-}
-
-std::string checkRerun()
-{
-    std::cout << "Rerun Program?..." << std::endl
-              << "======Options======" << std::endl
-              << "CONT to rerun" << std::endl
-              << "TERM to terminate" << std::endl
-              << "===================" << std::endl;
-    std::string option;
-    char ch;
-    while (true)
-    {
-        option = "";
-        while ((ch = getchar()) != '\n')
-            option += ch;
-        if (option == "CONT" || option == "TERM" || option == "cont" || option == "term")
-            break;
-    }
-    return option;
 }

@@ -54,12 +54,14 @@ struct BY_ID_INT
         return stoi(a->id) < stoi(b->id);
     }
 };
-
+std::vector<std::string> get_lines(std::string fileName);
+int get_points(std::vector<std::string> linesVector, std::vector<PointPtr> *pointVector);
 void sort_neighbours(kNeighboursPtr k_nearest_neighbours, int k_neighbours);
 void sort_points(std::vector<PointPtr> *Data);
 void sort_points_str(std::vector<std::string> *Data);
 int notAlreadyExists(kNeighboursPtr k_nearest_neighbours, std::string pointID);
 kNeighboursPtr find_k_true_neighbours(PointPtr queryPoint, int k_neighbours, std::vector<PointPtr> inputPoints, int dimension);
 bool mapFunction(int h, int i);
+std::string checkRerun();
 
 #endif

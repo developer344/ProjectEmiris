@@ -188,8 +188,17 @@ kNeighboursPtr HChashTable::find_k_nearest_neighbours(PointPtr queryPoint, int k
     return returnData;
 }
 
-vector<PointPtr> HChashTable::range_search(PointPtr queryPoint, double range)
+vector<PointPtr> HChashTable::range_search(PointPtr queryPoint, double range, std::vector<std::string> *foundPoints)
 {
+    bool noFoundPoints = false; // flag to know if data needs to be freed or not
+    if (foundPoints == NULL)
+    {
+        noFoundPoints = true;
+        foundPoints = new std::vector<std::string>;
+    }
+    else
+        std::sort(foundPoints->begin(), foundPoints->end());
+
     std::vector<unsigned long> *bucketsToCheck = new std::vector<unsigned long>;
     NeighbourPtr currNeighbour = new Neighbour;
 
@@ -227,7 +236,8 @@ vector<PointPtr> HChashTable::range_search(PointPtr queryPoint, double range)
         for (int k = 0; k < this->Table[currBucket]->points.size() && pointsChecked < this->maxcandidatesPoints; k++)
         {
 
-            bool found = binary_search(returnData.begin(), returnData.end(), this->Table[currBucket]->points[k], BY_ID());
+            //bool found = binary_search(returnData.begin(), returnData.end(), this->Table[currBucket]->points[k], BY_ID());
+            bool found = binary_search(foundPoints->begin(), foundPoints->end(), this->Table[currBucket]->points[k]->id);
 
             if (!found)
             {
@@ -237,7 +247,9 @@ vector<PointPtr> HChashTable::range_search(PointPtr queryPoint, double range)
                 if (currNeighbour->dist < range)
                 {
                     returnData.push_back(this->Table[currBucket]->points[k]);
+                    foundPoints->push_back(this->Table[currBucket]->points[k]->id);
                     sort_points(&returnData);
+                    sort_points_str(foundPoints);
                 }
             }
         }
@@ -250,5 +262,7 @@ vector<PointPtr> HChashTable::range_search(PointPtr queryPoint, double range)
     }
 
     delete currNeighbour;
+    if (noFoundPoints)
+        delete foundPoints;
     return returnData;
 }
