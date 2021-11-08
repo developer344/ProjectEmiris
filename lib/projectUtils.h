@@ -5,7 +5,7 @@
 #include <vector>
 
 #define BIGM (4294967291)
-#define W (3)
+#define W (5)
 
 typedef struct PointStruct *PointPtr;
 typedef struct BucketStruct *BucketPtr;
@@ -61,7 +61,6 @@ void sort_points(std::vector<PointPtr> *Data);
 void sort_points_str(std::vector<std::string> *Data);
 int notAlreadyExists(kNeighboursPtr k_nearest_neighbours, std::string pointID);
 kNeighboursPtr find_k_true_neighbours(PointPtr queryPoint, int k_neighbours, std::vector<PointPtr> inputPoints, int dimension);
-bool mapFunction(int h, int i);
 std::string checkRerun();
 
 #endif

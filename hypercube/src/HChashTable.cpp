@@ -3,9 +3,12 @@
 #include "hypercubeUtils.h"
 
 #include <algorithm>
+#include <random>
+#include <ctime>
+#include <cstdlib>
 
 #include "HChashTable.h"
-using namespace std;
+
 HChashTable::HChashTable(int dimension,
                          int projectionDimension,
                          int probes,
@@ -18,7 +21,6 @@ HChashTable::HChashTable(int dimension,
     this->bucketCount = powerWithBase2(this->projectionDimension + 1) - 1;
     this->Table.resize(this->bucketCount);
     this->t.resize(this->projectionDimension);
-    this->ri.resize(this->projectionDimension);
     this->v.resize(this->projectionDimension);
     for (int i = 0; i < this->bucketCount; i++)
         this->Table[i] = NULL;
@@ -26,7 +28,6 @@ HChashTable::HChashTable(int dimension,
     {
 
         this->t[i] = uniformDistributionGenerator(0.0, W * 1.0);
-        this->ri[i] = rand() % 2000 - 1000;
         this->v[i].resize(this->dimension);
         for (int j = 0; j < this->dimension; j++)
             this->v[i][j] = normalDistributionGenerator(0.0, 1.0);
@@ -63,7 +64,7 @@ unsigned long HChashTable::HashFunc(PointPtr point)
     {
 
         h = floor((inner_product(point->coords.begin(), point->coords.end(), this->v[i].begin(), 0) + this->t[i]) / W);
-        f = mapFunction(h, i + 1);
+        f = mapFunction(h);
 
         hashValue += (f == true) ? powerWithBase2(i) : 0; // adds 2^i if true, else 0
     }
@@ -142,7 +143,7 @@ kNeighboursPtr HChashTable::find_k_nearest_neighbours(PointPtr queryPoint, int k
                 bucketsToCheck = this->HChashTable::find_n_hamming_distance(currBucket, ++currHammingDistance);
                 if (bucketsToCheck == NULL)
                     bucketsToCheck = new std::vector<unsigned long>;
-            } while (bucketsToCheck->empty() && currHammingDistance < this->projectionDimension);
+            } while (bucketsToCheck->empty() && currHammingDistance <= this->projectionDimension);
 
             if (currHammingDistance > this->projectionDimension)
             {
@@ -188,7 +189,7 @@ kNeighboursPtr HChashTable::find_k_nearest_neighbours(PointPtr queryPoint, int k
     return returnData;
 }
 
-vector<PointPtr> HChashTable::range_search(PointPtr queryPoint, double range, std::vector<std::string> *foundPoints)
+std::vector<PointPtr> HChashTable::range_search(PointPtr queryPoint, double range, std::vector<std::string> *foundPoints)
 {
     bool noFoundPoints = false; // flag to know if data needs to be freed or not
     if (foundPoints == NULL)
@@ -202,7 +203,7 @@ vector<PointPtr> HChashTable::range_search(PointPtr queryPoint, double range, st
     std::vector<unsigned long> *bucketsToCheck = new std::vector<unsigned long>;
     NeighbourPtr currNeighbour = new Neighbour;
 
-    vector<PointPtr> returnData;
+    std::vector<PointPtr> returnData;
 
     unsigned long queryHash = this->HChashTable::HashFunc(queryPoint);
     bucketsToCheck->push_back(queryHash);
@@ -219,9 +220,10 @@ vector<PointPtr> HChashTable::range_search(PointPtr queryPoint, double range, st
                 delete bucketsToCheck;
                 bucketsToCheck = this->HChashTable::find_n_hamming_distance(currBucket, ++currHammingDistance);
                 if (bucketsToCheck == NULL)
+                {
                     bucketsToCheck = new std::vector<unsigned long>;
-            } while (bucketsToCheck->empty() && currHammingDistance < this->projectionDimension);
-
+                }
+            } while (bucketsToCheck->empty() && currHammingDistance <= this->projectionDimension);
             if (currHammingDistance > this->projectionDimension)
             {
                 if (bucketsToCheck != NULL)
@@ -230,13 +232,14 @@ vector<PointPtr> HChashTable::range_search(PointPtr queryPoint, double range, st
                 return returnData;
             }
         }
-        currBucket = bucketsToCheck->back();
+        int index = bucketsToCheck->size() - 1;
+        currBucket = (*bucketsToCheck)[index];
         bucketsToCheck->pop_back();
         // Checks currBucket
         for (int k = 0; k < this->Table[currBucket]->points.size() && pointsChecked < this->maxcandidatesPoints; k++)
         {
 
-            //bool found = binary_search(returnData.begin(), returnData.end(), this->Table[currBucket]->points[k], BY_ID());
+            // bool found = binary_search(returnData.begin(), returnData.end(), this->Table[currBucket]->points[k], BY_ID());
             bool found = binary_search(foundPoints->begin(), foundPoints->end(), this->Table[currBucket]->points[k]->id);
 
             if (!found)
@@ -265,4 +268,15 @@ vector<PointPtr> HChashTable::range_search(PointPtr queryPoint, double range, st
     if (noFoundPoints)
         delete foundPoints;
     return returnData;
+}
+
+// maps an integer value (h) to 0 or 1
+bool HChashTable::mapFunction(const int h)
+{
+    srand(time(NULL));
+    if (this->func_F.find(h) == this->func_F.end())
+    {
+        this->func_F[h] = rand() % 2 == 1;
+    }
+    return this->func_F[h];
 }

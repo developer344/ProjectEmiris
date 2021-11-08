@@ -150,13 +150,6 @@ kNeighboursPtr find_k_true_neighbours(PointPtr queryPoint, int k_neighbours, std
     return returnData;
 }
 
-// maps an integer value (h) to 0 or 1
-bool mapFunction(int h, int i)
-{
-    int ret = euclideanModulo(h, i * 10);
-    return ret > i * 5 ? true : false;
-}
-
 std::string checkRerun()
 {
     std::cout << "Rerun Program?..." << std::endl
