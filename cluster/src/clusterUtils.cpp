@@ -71,3 +71,76 @@ std::vector<int> get_2_closest_clusters(PointPtr point, std::vector<Cluster> clu
 
     return closestClusters;
 }
+
+// PointPtr update_centroid(ClusterPtr cluster, int dimension)
+// {
+//     //add centroidPoint in clusterPoints
+//     cluster->points.push_back(cluster->centroidPoint);
+//     int numOfPoints = cluster->points.size();
+
+//     PointPtr newCentroid;
+//     double pointDist = 0.0,
+//            minDist = INT32_MAX * 1.0;
+
+//     // create vector of distances between points
+//     std::vector<std::vector<double>> Distances;
+//     Distances.resize(numOfPoints);
+//     for (int i = 0; i < numOfPoints; i++)
+//         Distances[i].resize(numOfPoints);
+
+//     // calculate half distances (upper triangle) and complete the other half
+//     for (int i = 0; i < numOfPoints; i++)
+//         for (int j = 0; j < i; j++)
+//             Distances[i][j] = Distances[j][i] = euclideanDistance(cluster->points[i], cluster->points[j], dimension);
+
+//     //for each point, find sum of all distances and keep point with smallest sum
+//     for (int i = 0; i < numOfPoints; i++)
+//     {
+//         pointDist = 0.0;
+//         for (double dist : Distances[i])
+//             pointDist += dist;
+//         if (pointDist < minDist)
+//         {
+//             minDist = pointDist;
+//             newCentroid = cluster->points[i];
+//         }
+//     }
+
+//     return newCentroid;
+// }
+
+double update_centroid_average(PointPtr centroid, ClusterPtr cluster, int dimension)
+{
+    PointPtr oldCentroid = new Point(*centroid);
+    double change = 0.0;
+    int numOfPoints = cluster->points.size();
+    for (int i = 0; i < dimension; i++)
+    {
+        centroid->coords[i] = 0.0;
+        for (int j = 0; j < numOfPoints; j++)
+        {
+            centroid->coords[i] += cluster->points[j]->coords[i];
+        }
+        centroid->coords[i] /= numOfPoints;
+    }
+
+    // cluster->centroidPoint = centroid;
+    change = euclideanDistance(centroid, oldCentroid, dimension);
+    delete oldCentroid;
+    return change;
+}
+
+double updateCentroidPoints(std::vector<PointPtr> *centroids, std::vector<Cluster> *clusters, int dimension)
+{
+    int numOfClusters = clusters->size();
+
+    double change = 0.0;
+
+    std::vector<PointPtr> centroidPoints;
+    centroidPoints.resize(numOfClusters);
+
+    for (int i = 0; i < numOfClusters; i++)
+        change += update_centroid_average(centroids->at(i), &(clusters->at(i)), dimension);
+
+    return change;
+}

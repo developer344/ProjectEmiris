@@ -126,12 +126,12 @@ int main(int argc, char **argv)
     ifstream configFile(CLData.configFileName);
     if (!configFile.is_open())
     {
-        cerr << "Could not open the file: '"
-             << CLData.configFileName << "'"
-             << std::endl;
+        std::cerr << "Could not open the file: '"
+                  << CLData.configFileName << "'"
+                  << std::endl;
         return EXIT_FAIL_CONFIG_ERR;
     }
-    cout << "Reading config file " << CLData.configFileName << "..." << endl;
+    std::cout << "Reading config file " << CLData.configFileName << "..." << std::endl;
     std::vector<std::string> configLines;
     std::string line;
 
@@ -155,7 +155,7 @@ int main(int argc, char **argv)
                 {
                     if (!is_number(word))
                     {
-                        cerr << "Parameter [" << parameter << "]: Value '" << word << "' is not an integer" << endl;
+                        std::cerr << "Parameter [" << parameter << "]: Value '" << word << "' is not an integer" << std::endl;
                         return EXIT_FAIL_CONFIG_ERR;
                     }
 
@@ -211,12 +211,12 @@ int main(int argc, char **argv)
     ifstream inputFile(CLData.inputFileName);
     if (!inputFile.is_open())
     {
-        cerr << "Could not open the file: '"
-             << CLData.inputFileName << "'"
-             << std::endl;
+        std::cerr << "Could not open the file: '"
+                  << CLData.inputFileName << "'"
+                  << std::endl;
         return EXIT_FAIL_INPUT_ERR;
     }
-    cout << "Reading input file " << CLData.inputFileName << "..." << endl;
+    std::cout << "Reading input file " << CLData.inputFileName << "..." << std::endl;
     std::vector<std::string> inputLines;
     // std::string line;
     while (getline(inputFile, line))
@@ -266,9 +266,26 @@ int main(int argc, char **argv)
 
     // Calculate vector of centroid points (1 for each cluster)
     std::cout << "Calculating centroid points..." << std::endl;
-    std::vector<PointPtr> centroidPoints = k_means(inputPoints, CLData.number_of_clusters, CLData.dimension);
-    std::vector<Cluster> clusters;
+    std::vector<PointPtr> centroidPoints;
+    centroidPoints.resize(CLData.number_of_clusters);
+    for (int i = 0; i < CLData.number_of_clusters; i++)
+    {
+        centroidPoints[i] = new Point;
+        centroidPoints[i]->id = "";
+        centroidPoints[i]->coords.resize(CLData.dimension);
+    }
 
+    std::vector<PointPtr> tempCentroidPoints = k_means(inputPoints, CLData.number_of_clusters, CLData.dimension);
+    // "Translate actual points that k_means returned to virtual centroid points"
+    for (int i = 0; i < CLData.number_of_clusters; i++)
+    {
+        centroidPoints[i]->id = "";
+        for (int j = 0; j < CLData.dimension; j++)
+            centroidPoints[i]->coords[j] = tempCentroidPoints[i]->coords[j];
+    }
+    tempCentroidPoints.clear();
+
+    std::vector<Cluster> clusters;
     clusters.resize(CLData.number_of_clusters);
     for (int i = 0; i < CLData.number_of_clusters; i++)
     {
@@ -289,7 +306,23 @@ int main(int argc, char **argv)
         }
     }
     else if (CLData.method == LSH_METHOD)
-        lsh_method(&centroidPoints, &clusters, &inputPoints, &CLData, numOfPoints);
+    {
+        double change = INT32_MAX * 1.0;
+        while (change > CLData.dimension * 1.0)
+        {
+            lsh_method(&centroidPoints, &clusters, &inputPoints, &CLData, numOfPoints);
+            change = updateCentroidPoints(&centroidPoints, &clusters, CLData.dimension);
+            if (change > CLData.dimension * 1.0)
+            {
+                for (int c = 0; c < CLData.number_of_clusters; c++)
+                {
+                    clusters[c].points.clear();
+                    clusters[c].size = 0;
+                }
+            }
+            std::cout << "Change " << change << std::endl;
+        }
+    }
     else if (CLData.method == HYPERCUBE_METHOD)
         hyperCube_method(&centroidPoints, &clusters, &inputPoints, &CLData, numOfPoints);
     auto cluster_end = std::chrono::high_resolution_clock::now();
@@ -315,9 +348,9 @@ int main(int argc, char **argv)
     ofstream outputFile(CLData.outputFileName);
     if (!outputFile.is_open())
     {
-        cerr << "Could not open the file: '"
-             << CLData.outputFileName << "'"
-             << std::endl;
+        std::cerr << "Could not open the file: '"
+                  << CLData.outputFileName << "'"
+                  << std::endl;
         return EXIT_FAIL_OUTPUT_ERR;
     }
 
@@ -328,7 +361,7 @@ int main(int argc, char **argv)
         outputFile << "Range Search LSH";
     else if (CLData.method == HYPERCUBE_METHOD)
         outputFile << "Range Search Hypercube";
-    outputFile << endl;
+    outputFile << std::endl;
 
     for (int i = 0; i < CLData.number_of_clusters; i++)
     {
@@ -338,23 +371,24 @@ int main(int argc, char **argv)
 
         for (int j = 0; j < CLData.dimension; j++)
             outputFile << centroidPoints[i]->coords[j] << " ";
-        outputFile << "}" << endl;
+        outputFile << "}" << std::endl
+                   << std::endl;
     }
     outputFile << "clustering_time: " << (double)(tCluster / 1000)
-               << "s" << endl;
+               << "s" << std::endl;
     outputFile << "Silhouette: [";
 
     // for (int i = 0; i < CLData.number_of_clusters; i++)
     //     outputFile << clusters[i].silhouette << ", ";
-    // outputFile << totalSilhouette << "]" << endl;
+    // outputFile << totalSilhouette << "]" << std::endl;
 
     if (CLData.complete)
     {
-        outputFile << endl;
+        outputFile << std::endl;
         for (int i = 0; i < CLData.number_of_clusters; i++)
         {
             std::sort(clusters[i].points.begin(), clusters[i].points.end(), BY_ID_INT());
-            outputFile << endl
+            outputFile << std::endl
                        << "CLUSTER-"
                        << i + 1 << " {"
                        << clusters[i].centroidPoint->id;
@@ -362,7 +396,7 @@ int main(int argc, char **argv)
             for (int j = 0; j < clusters[i].size; j++)
                 outputFile << ", " << clusters[i].points[j]->id;
 
-            outputFile << "}" << endl;
+            outputFile << "}" << std::endl;
         }
     }
 
