@@ -295,36 +295,109 @@ int main(int argc, char **argv)
 
     std::cout << "Assigning points to clusters..." << std::endl;
     auto cluster_start = std::chrono::high_resolution_clock::now();
+    bool flag = false;
     if (CLData.method == CLASSIC_METHOD)
     {
-        int index = 0;
-        for (int i = 0; i < numOfPoints; i++)
+
+        double change = INT32_MAX * 1.0;
+        int count = 0;
+        while (count < 50)
         {
-            index = lloyd_method(&centroidPoints, inputPoints[i], CLData.dimension);
-            clusters[index].points.push_back(inputPoints[i]);
-            clusters[index].size++;
+            if (flag)
+            {
+                for (int i = 0; i < CLData.number_of_clusters; i++)
+                {
+                    delete centroidPoints[i];
+                    centroidPoints[i] = tempCentroidPoints[i];
+                    clusters[i].centroidPoint = tempCentroidPoints[i];
+                }
+                tempCentroidPoints.clear();
+            }
+            else
+                flag = true;
+            for (int c = 0; c < CLData.number_of_clusters; c++)
+            {
+                clusters[c].points.clear();
+                clusters[c].size = 0;
+            }
+            int index = 0;
+            for (int i = 0; i < numOfPoints; i++)
+            {
+                index = lloyd_method(&centroidPoints, inputPoints[i], CLData.dimension);
+                clusters[index].points.push_back(inputPoints[i]);
+                clusters[index].size++;
+            }
+            // change = calculateChanges
+            change = calculateChanges(&centroidPoints, &clusters, &tempCentroidPoints, CLData.dimension);
+
+            std::cout << "Change " << change << "," << count << std::endl;
+            count++;
         }
     }
     else if (CLData.method == LSH_METHOD)
     {
+        HashTables HashTablesObject(CLData.number_of_vector_hash_tables, CLData.number_of_vector_hash_functions, numOfPoints, CLData.dimension, numOfPoints / 8);
+
+        for (int i = 0; i < numOfPoints; i++)
+            HashTablesObject.HashTables::InsertPoint((inputPoints)[i]);
         double change = INT32_MAX * 1.0;
-        while (change > CLData.dimension * 1.0)
+        int count = 0;
+        while (change > 30 && count < 50)
         {
-            lsh_method(&centroidPoints, &clusters, &inputPoints, &CLData, numOfPoints);
-            change = updateCentroidPoints(&centroidPoints, &clusters, CLData.dimension);
-            if (change > CLData.dimension * 1.0)
+            if (flag)
             {
-                for (int c = 0; c < CLData.number_of_clusters; c++)
+                for (int i = 0; i < CLData.number_of_clusters; i++)
                 {
-                    clusters[c].points.clear();
-                    clusters[c].size = 0;
+                    delete centroidPoints[i];
+                    centroidPoints[i] = tempCentroidPoints[i];
+                    clusters[i].centroidPoint = tempCentroidPoints[i];
                 }
+                tempCentroidPoints.clear();
             }
-            std::cout << "Change " << change << std::endl;
+            else
+                flag = true;
+            for (int c = 0; c < CLData.number_of_clusters; c++)
+            {
+                clusters[c].points.clear();
+                clusters[c].size = 0;
+            }
+            lsh_method(&HashTablesObject, &centroidPoints, &clusters, &inputPoints, &CLData, numOfPoints);
+            change = calculateChanges(&centroidPoints, &clusters, &tempCentroidPoints, CLData.dimension);
+
+            std::cout << "Change " << change << "," << count << std::endl;
+            count++;
         }
     }
     else if (CLData.method == HYPERCUBE_METHOD)
-        hyperCube_method(&centroidPoints, &clusters, &inputPoints, &CLData, numOfPoints);
+    {
+        double change = INT32_MAX * 1.0;
+        int count = 0;
+        while (change > 20.0 && count < 20)
+        {
+            if (flag)
+            {
+                for (int i = 0; i < CLData.number_of_clusters; i++)
+                {
+                    delete centroidPoints[i];
+                    centroidPoints[i] = tempCentroidPoints[i];
+                    clusters[i].centroidPoint = tempCentroidPoints[i];
+                }
+                tempCentroidPoints.clear();
+            }
+            else
+                flag = true;
+            for (int c = 0; c < CLData.number_of_clusters; c++)
+            {
+                clusters[c].points.clear();
+                clusters[c].size = 0;
+            }
+            hyperCube_method(&centroidPoints, &clusters, &inputPoints, &CLData, numOfPoints);
+            change = calculateChanges(&centroidPoints, &clusters, &tempCentroidPoints, CLData.dimension);
+
+            std::cout << "Change " << change << "," << count << std::endl;
+            count++;
+        }
+    }
     auto cluster_end = std::chrono::high_resolution_clock::now();
     int tCluster = std::chrono::duration_cast<std::chrono::milliseconds>(cluster_end - cluster_start).count();
 
