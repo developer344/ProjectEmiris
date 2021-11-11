@@ -26,7 +26,7 @@ int lloyd_method(std::vector<PointPtr> *centroidPoints, PointPtr point, int dime
     return index;
 }
 
-void lsh_method(std::vector<PointPtr> *centroids, std::vector<Cluster> *clusters, const std::vector<PointPtr> *inputPoints, inputData *CLData, int numOfInputPoints)
+void lsh_method(HashTables *HashTablesObject, std::vector<PointPtr> *centroids, std::vector<Cluster> *clusters, const std::vector<PointPtr> *inputPoints, inputData *CLData, int numOfInputPoints)
 {
     std::vector<PointPtr> foundPoints;
     std::vector<std::string> foundPointIDs;
@@ -34,10 +34,6 @@ void lsh_method(std::vector<PointPtr> *centroids, std::vector<Cluster> *clusters
 
     foundPointIDsPerCluster.resize(CLData->number_of_clusters);
 
-    HashTables HashTablesObject(CLData->number_of_vector_hash_tables, CLData->number_of_vector_hash_functions, numOfInputPoints, CLData->dimension, numOfInputPoints / 8);
-
-    for (int i = 0; i < numOfInputPoints; i++)
-        HashTablesObject.HashTables::InsertPoint((*inputPoints)[i]);
     int inputPointsSize = inputPoints->size();
     double currRadius = minDistBetweenCentroids(centroids, CLData->number_of_clusters, CLData->dimension) / 2;
     std::vector<std::vector<PointPtr>> clusterPoints;
@@ -46,15 +42,17 @@ void lsh_method(std::vector<PointPtr> *centroids, std::vector<Cluster> *clusters
 
     int initialInputPoints = inputPointsSize;
     int initialRadius = currRadius;
-    int currNumOfFound = 101;
+    int prevNumOfFound = 0;
+    int currNumOfFound = 0;
     int numOfFound = 0;
-    while (initialInputPoints - numOfFound > initialInputPoints / 10 && currRadius < initialRadius * 100 && currNumOfFound > 1)
+    while (initialInputPoints - numOfFound >= initialInputPoints / 10 && currRadius < initialRadius * 100 && (currNumOfFound >= prevNumOfFound || currNumOfFound > 1))
     {
+        prevNumOfFound = currNumOfFound;
         currNumOfFound = 0;
         for (int c = 0; c < CLData->number_of_clusters; c++)
         {
-            clusterPoints[c] = HashTablesObject.range_search((*centroids)[c], currRadius, &(foundPointIDsPerCluster[c]));
-            std::cout << "ClP[c] = " << clusterPoints[c].size() << std::endl;
+            clusterPoints[c] = HashTablesObject->range_search((*centroids)[c], currRadius, &(foundPointIDsPerCluster[c]));
+            // std::cout << "ClP[c] = " << clusterPoints[c].size() << std::endl;
         }
         std::vector<std::string> tempArray;
         for (int i = 0; i < CLData->number_of_clusters; i++)
@@ -132,15 +130,16 @@ void lsh_method(std::vector<PointPtr> *centroids, std::vector<Cluster> *clusters
             }
             clusterPoints[c].clear();
         }
-        //std::sort(foundPointIDs.begin(), foundPointIDs.end());
+        // std::sort(foundPointIDs.begin(), foundPointIDs.end());
         currRadius *= 2;
         numOfFound += currNumOfFound;
-        std::cout << currNumOfFound << std::endl;
+        // std::cout << currNumOfFound << std::endl;
     }
     int index = 0;
-    bool found = false;
+
     for (auto currPoint : (*inputPoints))
     {
+        bool found = false;
         for (int c = 0; c < CLData->number_of_clusters; c++)
         {
             // search for inputPoint in every cluster
@@ -158,10 +157,6 @@ void lsh_method(std::vector<PointPtr> *centroids, std::vector<Cluster> *clusters
             (*clusters)[index].size++;
         }
     }
-    // inputPoints->clear();
-    foundPointIDs;
-    foundPointIDsPerCluster;
-    foundPoints;
     foundPoints.clear();
     foundPointIDs.clear();
     for (int c = 0; c < CLData->number_of_clusters; c++)
@@ -277,7 +272,7 @@ void hyperCube_method(std::vector<PointPtr> *centroids, std::vector<Cluster> *cl
             }
             clusterPoints[c].clear();
         }
-        //std::sort(foundPointIDs.begin(), foundPointIDs.end());
+        // std::sort(foundPointIDs.begin(), foundPointIDs.end());
         currRadius *= 2;
         std::cout << currNumOfFound << std::endl;
     }

@@ -8,7 +8,7 @@ SRCCUBE=./hypercube/src
 SRCCLUSTER=./cluster/src
 
 
-CCFLAGS = -lm -g
+CCFLAGS = -lm -g -O2
 
 all: lsh.out cube.out cluster.out  
 

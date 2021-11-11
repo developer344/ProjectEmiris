@@ -40,7 +40,9 @@ typedef struct ClusterDataStruct
 double silhouette_calculator(PointPtr point, std::vector<Cluster> clusters, int dimensions);
 std::vector<int> get_2_closest_clusters(PointPtr point, std::vector<Cluster> clusters, int dimensions);
 PointPtr update_centroid(ClusterPtr cluster, int dimension);
-double update_centroid_average(PointPtr centroid, ClusterPtr cluster, int dimension);
-double updateCentroidPoints(std::vector<PointPtr> *centroids, std::vector<Cluster> *clusters, int dimension);
+double calculateChanges(std::vector<PointPtr> *centroids,
+                        std::vector<Cluster> *clusters,
+                        std::vector<PointPtr> *newCentroids,
+                        int dimension);
 
 #endif

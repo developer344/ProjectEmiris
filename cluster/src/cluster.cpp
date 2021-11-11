@@ -43,6 +43,7 @@ int main(int argc, char **argv)
     CLData.max_number_M_hypercube = DEF_MAX_NUM_M_CUBE;
     CLData.number_of_hypercube_dimensions = DEF_NUM_CUBE_DIM;
     CLData.number_of_probes = DEF_PROBES;
+    CLData.complete = false;
 
     for (int i = 0; i < argc; i++)
     {
@@ -276,10 +277,9 @@ int main(int argc, char **argv)
     }
 
     std::vector<PointPtr> tempCentroidPoints = k_means(inputPoints, CLData.number_of_clusters, CLData.dimension);
-    // "Translate actual points that k_means returned to virtual centroid points"
+    // Translate actual points that k_means returned to virtual centroid points
     for (int i = 0; i < CLData.number_of_clusters; i++)
     {
-        centroidPoints[i]->id = "";
         for (int j = 0; j < CLData.dimension; j++)
             centroidPoints[i]->coords[j] = tempCentroidPoints[i]->coords[j];
     }
@@ -403,18 +403,18 @@ int main(int argc, char **argv)
 
     std::cout << "Evaluating silhouette..." << std::endl;
 
-    // double totalSilhouette = 0.0;
-    // for (int i = 0; i < CLData.number_of_clusters; i++)
-    // { // for each cluster
-    //     double silhouetteSum = 0.0;
-    //     for (int j = 0; j < clusters[i].size; j++)
-    //     { // for each point in cluster
-    //         silhouetteSum += silhouette_calculator(clusters[i].points[j], clusters, dimension);
-    //     }
-    //     clusters[i].silhouette = silhouetteSum / (double)(clusters[i].size); // saves average
-    //     totalSilhouette += silhouetteSum;
-    // }
-    // totalSilhouette /= numOfPoints;
+    double totalSilhouette = 0.0;
+    for (int i = 0; i < CLData.number_of_clusters; i++)
+    { // for each cluster
+        double silhouetteSum = 0.0;
+        for (int j = 0; j < clusters[i].size; j++)
+        { // for each point in cluster
+            silhouetteSum += silhouette_calculator(clusters[i].points[j], clusters, dimension);
+        }
+        clusters[i].silhouette = silhouetteSum / (double)(clusters[i].size); // saves average
+        totalSilhouette += silhouetteSum;
+    }
+    totalSilhouette /= numOfPoints;
 
     std::cout << "Writing output file..." << std::endl;
 
@@ -451,9 +451,9 @@ int main(int argc, char **argv)
                << "s" << std::endl;
     outputFile << "Silhouette: [";
 
-    // for (int i = 0; i < CLData.number_of_clusters; i++)
-    //     outputFile << clusters[i].silhouette << ", ";
-    // outputFile << totalSilhouette << "]" << std::endl;
+    for (int i = 0; i < CLData.number_of_clusters; i++)
+        outputFile << clusters[i].silhouette << ", ";
+    outputFile << totalSilhouette << "]" << std::endl;
 
     if (CLData.complete)
     {
