@@ -4,13 +4,11 @@
 
 #include "lshUtils.h"
 
-using namespace std;
-
 inputData *getInputData(int *argc, char **argv)
 {
 
     inputData *LSHData = new inputData;
-    vector<std::string> found;
+    std::vector<std::string> found;
     LSHData->distance_true_visible = false;
 
     for (int i = 0; i < *argc; i++)
@@ -67,7 +65,7 @@ inputData *getInputData(int *argc, char **argv)
     //-----------------------------------------------------------------------------------------//
 
     char ch;
-    string word = "";
+    std::string word = "";
 
     *argc = 1;
 
@@ -106,7 +104,7 @@ inputData *getInputData(int *argc, char **argv)
         while ((ch = getchar()) != '\n')
             word += ch;
         if (word == "")
-            std::cout << "Using Default Value of k = " << LSHData->numberOfHyperplanes << endl;
+            std::cout << "Using Default Value of k = " << LSHData->numberOfHyperplanes << std::endl;
         else
             LSHData->numberOfHyperplanes = stoi(word);
     }
@@ -118,7 +116,7 @@ inputData *getInputData(int *argc, char **argv)
         while ((ch = getchar()) != '\n')
             word += ch;
         if (word == "")
-            std::cout << "Using Default Value of L = " << LSHData->intL << endl;
+            std::cout << "Using Default Value of L = " << LSHData->intL << std::endl;
         else
             LSHData->intL = stoi(word);
     }
@@ -130,7 +128,7 @@ inputData *getInputData(int *argc, char **argv)
         while ((ch = getchar()) != '\n')
             word += ch;
         if (word == "")
-            std::cout << "Using Default Value of N = " << LSHData->numberOfNearest << endl;
+            std::cout << "Using Default Value of N = " << LSHData->numberOfNearest << std::endl;
         else
             LSHData->numberOfNearest = stoi(word);
     }
@@ -142,15 +140,15 @@ inputData *getInputData(int *argc, char **argv)
         while ((ch = getchar()) != '\n')
             word += ch;
         if (word == "")
-            std::cout << "Using Default Value of radius = " << LSHData->radius << endl;
+            std::cout << "Using Default Value of radius = " << LSHData->radius << std::endl;
         else
             LSHData->radius = stoi(word);
     }
 
     if (LSHData->inputFileName.empty() || LSHData->outputFileName.empty() || LSHData->queryFileName.empty())
     {
-        cerr << "Arguments must contain all input file, output file and query file. The rest of the arguments are optional"
-             << std::endl;
+        std::cerr << "Arguments must contain all input file, output file and query file. The rest of the arguments are optional"
+                  << std::endl;
         delete LSHData;
         return NULL;
     }
@@ -159,18 +157,18 @@ inputData *getInputData(int *argc, char **argv)
 
 int writeToOutput(inputData *LSHData,
                   std::vector<PointPtr> queryPoints,
-                  vector<kNeighboursPtr> queryOutputData,
-                  vector<kNeighboursPtr> queryTrueNeighbors,
-                  vector<vector<PointPtr>> queryRangeSearch,
-                  vector<double> tLSH,
-                  vector<double> tTrue)
+                  std::vector<kNeighboursPtr> queryOutputData,
+                  std::vector<kNeighboursPtr> queryTrueNeighbors,
+                  std::vector<std::vector<PointPtr>> queryRangeSearch,
+                  std::vector<double> tLSH,
+                  std::vector<double> tTrue)
 {
-    ofstream outputFile(LSHData->outputFileName);
+    std::ofstream outputFile(LSHData->outputFileName);
     if (!outputFile.is_open())
     {
-        cerr << "Could not open the file: '"
-             << LSHData->outputFileName << "'"
-             << std::endl;
+        std::cerr << "Could not open the file: '"
+                  << LSHData->outputFileName << "'"
+                  << std::endl;
         return EXIT_FAILURE;
     }
 
@@ -206,9 +204,10 @@ int writeToOutput(inputData *LSHData,
 
 void deleteData(std::vector<PointPtr> *inputPoints,
                 std::vector<PointPtr> *queryPoints,
-                vector<vector<Neighbour> *> *k_nearest_neighbours,
-                vector<kNeighboursPtr> *queryOutputData,
-                vector<kNeighboursPtr> *queryTrueNeighbors)
+                std::vector<std::vector<Neighbour> *> *k_nearest_neighbours,
+                std::vector<kNeighboursPtr> *queryOutputData,
+                std::vector<kNeighboursPtr> *queryTrueNeighbors,
+                inputData *LSHData)
 {
     for (int i = 0; i < inputPoints->size(); i++)
     {
@@ -230,4 +229,5 @@ void deleteData(std::vector<PointPtr> *inputPoints,
             delete (*queryTrueNeighbors)[i];
         }
     }
+    delete LSHData;
 }

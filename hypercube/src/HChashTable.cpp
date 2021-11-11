@@ -14,14 +14,22 @@ HChashTable::HChashTable(int dimension,
                          int probes,
                          int maxcandidatesPoints)
 {
+    //Initializing
     this->dimension = dimension;
     this->projectionDimension = projectionDimension;
     this->probes = probes;
     this->maxcandidatesPoints = maxcandidatesPoints;
+
+    //Finding number of buckets
     this->bucketCount = powerWithBase2(this->projectionDimension + 1) - 1;
+
     this->Table.resize(this->bucketCount);
     this->t.resize(this->projectionDimension);
     this->v.resize(this->projectionDimension);
+
+    //Creating map
+    this->func_F.resize(projectionDimension);
+
     for (int i = 0; i < this->bucketCount; i++)
         this->Table[i] = NULL;
     for (int i = 0; i < this->projectionDimension; i++)
@@ -62,9 +70,9 @@ unsigned long HChashTable::HashFunc(PointPtr point)
 
     for (int i = 0; i < this->projectionDimension; i++)
     {
-
         h = floor((inner_product(point->coords.begin(), point->coords.end(), this->v[i].begin(), 0) + this->t[i]) / W);
-        f = mapFunction(h);
+
+        f = mapFunction(h, i);
 
         hashValue += (f == true) ? powerWithBase2(i) : 0; // adds 2^i if true, else 0
     }
@@ -271,12 +279,12 @@ std::vector<PointPtr> HChashTable::range_search(PointPtr queryPoint, double rang
 }
 
 // maps an integer value (h) to 0 or 1
-bool HChashTable::mapFunction(const int h)
+bool HChashTable::mapFunction(const int h, const int i)
 {
     srand(time(NULL));
-    if (this->func_F.find(h) == this->func_F.end())
+    if (this->func_F[i].find(h) == this->func_F[i].end())
     {
-        this->func_F[h] = rand() % 2 == 1;
+        this->func_F[i][h] = rand() % 2 == 1;
     }
-    return this->func_F[h];
+    return this->func_F[i][h];
 }

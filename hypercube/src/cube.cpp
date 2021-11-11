@@ -12,8 +12,6 @@
 #include "HChashTable.h"
 #include "mathUtils.h"
 
-using namespace std;
-
 int main(int argc, char **argv)
 {
     std::string option;
@@ -29,7 +27,7 @@ int main(int argc, char **argv)
             return EXIT_FAILURE;
 
         // Opening inputFile
-        cout << "Reading input file " << HCData->inputFileName << "..." << endl;
+        std::cout << "Reading input file " << HCData->inputFileName << "..." << std::endl;
         std::vector<std::string> inputLines = get_lines(HCData->inputFileName);
 
         // Getting points from lines
@@ -47,21 +45,21 @@ int main(int argc, char **argv)
             HypercubeObject.HChashTable::InsertPoint(inputPoints[i]);
 
         // Getting lines from query file
-        cout << "Reading query file " << HCData->queryFileName << "..." << endl;
-        vector<std::string> queryLines = get_lines(HCData->queryFileName);
+        std::cout << "Reading query file " << HCData->queryFileName << "..." << std::endl;
+        std::vector<std::string> queryLines = get_lines(HCData->queryFileName);
 
         // Getting points from lines
-        vector<PointPtr> queryPoints;
+        std::vector<PointPtr> queryPoints;
         get_points(queryLines, &queryPoints);
 
         // HyperCube k nearest neighbor search
-        vector<vector<Neighbour> *> k_nearest_neighbours;
+        std::vector<std::vector<Neighbour> *> k_nearest_neighbours;
         k_nearest_neighbours.resize(queryLines.size());
 
-        vector<kNeighboursPtr> queryOutputData;
+        std::vector<kNeighboursPtr> queryOutputData;
         queryOutputData.resize(queryLines.size());
 
-        vector<double> tCube;
+        std::vector<double> tCube;
         tCube.resize(queryLines.size());
 
         std::cout << "Executing Hypercube search algorithm..." << std::endl;
@@ -75,10 +73,10 @@ int main(int argc, char **argv)
         }
 
         // Brute force k nearest neighbor search
-        vector<kNeighboursPtr> queryTrueNeighbors;
+        std::vector<kNeighboursPtr> queryTrueNeighbors;
         queryTrueNeighbors.resize(queryLines.size());
 
-        vector<double> tTrue;
+        std::vector<double> tTrue;
         tTrue.resize(queryLines.size());
 
         std::cout << "Executing brute-force search algorithm..." << std::endl;
@@ -92,7 +90,7 @@ int main(int argc, char **argv)
         }
 
         // HyperCube range search
-        vector<vector<PointPtr>> queryRangeSearch;
+        std::vector<std::vector<PointPtr>> queryRangeSearch;
         queryRangeSearch.resize(queryLines.size());
 
         std::cout << "Executing range search algorithm..." << std::endl;
@@ -107,7 +105,7 @@ int main(int argc, char **argv)
             return EXIT_FAILURE;
 
         // Deleting Data Structures
-        deleteData(&inputPoints, &queryPoints, &k_nearest_neighbours, &queryOutputData, &queryTrueNeighbors);
+        deleteData(&inputPoints, &queryPoints, &k_nearest_neighbours, &queryOutputData, &queryTrueNeighbors, HCData);
 
         option = checkRerun();
     }

@@ -12,8 +12,6 @@
 #include "mathUtils.h"
 #include "lshUtils.h"
 
-using namespace std;
-
 int main(int argc, char **argv)
 {
     std::string option;
@@ -29,11 +27,11 @@ int main(int argc, char **argv)
             return EXIT_FAILURE;
 
         // Opening inputFile
-        cout << "Reading input file " << LSHData->inputFileName << "..." << endl;
-        vector<std::string> inputLines = get_lines(LSHData->inputFileName);
+        std::cout << "Reading input file " << LSHData->inputFileName << "..." << std::endl;
+        std::vector<std::string> inputLines = get_lines(LSHData->inputFileName);
 
         // Getting points from lines
-        vector<PointPtr> inputPoints;
+        std::vector<PointPtr> inputPoints;
         LSHData->dimension = get_points(inputLines, &inputPoints);
 
         std::cout << "Dimension: " << LSHData->dimension << std::endl
@@ -48,21 +46,21 @@ int main(int argc, char **argv)
             HashTablesObject.HashTables::InsertPoint(inputPoints[i]);
 
         // Getting lines from query file
-        cout << "Reading query file " << LSHData->queryFileName << "..." << endl;
-        vector<std::string> queryLines = get_lines(LSHData->queryFileName);
+        std::cout << "Reading query file " << LSHData->queryFileName << "..." << std::endl;
+        std::vector<std::string> queryLines = get_lines(LSHData->queryFileName);
 
         // Getting points from lines
-        vector<PointPtr> queryPoints;
+        std::vector<PointPtr> queryPoints;
         get_points(queryLines, &queryPoints);
 
         // LSH k nearest neighbor search
-        vector<vector<Neighbour> *> k_nearest_neighbours;
+        std::vector<std::vector<Neighbour> *> k_nearest_neighbours;
         k_nearest_neighbours.resize(queryLines.size());
 
-        vector<kNeighboursPtr> queryOutputData;
+        std::vector<kNeighboursPtr> queryOutputData;
         queryOutputData.resize(queryLines.size());
 
-        vector<double> tLSH;
+        std::vector<double> tLSH;
         tLSH.resize(queryLines.size());
 
         std::cout << "Executing LSH search algorithm..." << std::endl;
@@ -77,10 +75,10 @@ int main(int argc, char **argv)
         }
 
         // Brute force k nearest neighbor search
-        vector<kNeighboursPtr> queryTrueNeighbors;
+        std::vector<kNeighboursPtr> queryTrueNeighbors;
         queryTrueNeighbors.resize(queryLines.size());
 
-        vector<double> tTrue;
+        std::vector<double> tTrue;
         tTrue.resize(queryLines.size());
 
         std::cout << "Executing brute-force search algorithm..." << std::endl;
@@ -94,7 +92,7 @@ int main(int argc, char **argv)
         }
 
         // LSH range search
-        vector<vector<PointPtr>> queryRangeSearch;
+        std::vector<std::vector<PointPtr>> queryRangeSearch;
         queryRangeSearch.resize(queryLines.size());
 
         std::cout << "Executing range search algorithm..." << std::endl;
@@ -109,7 +107,7 @@ int main(int argc, char **argv)
             return EXIT_FAILURE;
 
         // Deleting Data Structures
-        deleteData(&inputPoints, &queryPoints, &k_nearest_neighbours, &queryOutputData, &queryTrueNeighbors);
+        deleteData(&inputPoints, &queryPoints, &k_nearest_neighbours, &queryOutputData, &queryTrueNeighbors, LSHData);
 
         option = checkRerun();
     }

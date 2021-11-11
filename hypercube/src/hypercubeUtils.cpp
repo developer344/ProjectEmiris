@@ -226,7 +226,8 @@ void deleteData(std::vector<PointPtr> *inputPoints,
                 std::vector<PointPtr> *queryPoints,
                 std::vector<std::vector<Neighbour> *> *k_nearest_neighbours,
                 std::vector<kNeighboursPtr> *queryOutputData,
-                std::vector<kNeighboursPtr> *queryTrueNeighbors)
+                std::vector<kNeighboursPtr> *queryTrueNeighbors,
+                inputData *HCData)
 {
     for (int i = 0; i < inputPoints->size(); i++)
     {
@@ -248,4 +249,5 @@ void deleteData(std::vector<PointPtr> *inputPoints,
             delete (*queryTrueNeighbors)[i];
         }
     }
+    delete HCData;
 }

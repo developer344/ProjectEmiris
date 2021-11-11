@@ -11,7 +11,7 @@
 #define DEF_N 1
 #define DEF_R 500
 
-typedef struct inputDataStruct
+typedef struct HCinputDataStruct
 {
     std::string inputFileName;
     std::string queryFileName;
@@ -37,6 +37,7 @@ void deleteData(std::vector<PointPtr> *inputPoints,
                 std::vector<PointPtr> *queryPoints,
                 std::vector<std::vector<Neighbour> *> *k_nearest_neighbours,
                 std::vector<kNeighboursPtr> *queryOutputData,
-                std::vector<kNeighboursPtr> *queryTrueNeighbors);
+                std::vector<kNeighboursPtr> *queryTrueNeighbors,
+                inputData *HCData);
 
 #endif

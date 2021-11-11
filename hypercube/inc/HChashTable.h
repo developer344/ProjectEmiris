@@ -18,7 +18,7 @@ private:
     int probes;
     int maxcandidatesPoints;
     unsigned long bucketCount;
-    std::map<int, bool> func_F;
+    std::vector<std::map<int, bool>> func_F;
 
 public:
     HChashTable(int dimension,
@@ -31,7 +31,7 @@ public:
     kNeighboursPtr find_k_nearest_neighbours(PointPtr queryPoint, int k_neighbours);
     std::vector<unsigned long> *find_n_hamming_distance(unsigned long currBucketValue, int hammingDistance);
     std::vector<PointPtr> range_search(PointPtr queryPoint, double range, std::vector<std::string> *foundPoints = NULL);
-    bool mapFunction(int h);
+    bool mapFunction(const int h, const int i);
 };
 
 #endif

@@ -9,8 +9,6 @@
 #include "../../lib/mathUtils.h"
 #include "../../lib/projectUtils.h"
 
-using namespace std;
-
 HashTables::HashTables(int L, int numberOfHyperplanes, int numberOfPoints, int dimension, int tableSize) // Constructor
 
 {
@@ -165,7 +163,7 @@ kNeighboursPtr HashTables::find_k_nearest_neighbours(PointPtr queryPoint, int k_
     return returnData;
 }
 
-vector<PointPtr> HashTables::range_search(PointPtr queryPoint, double range, std::vector<std::string> *foundPoints)
+std::vector<PointPtr> HashTables::range_search(PointPtr queryPoint, double range, std::vector<std::string> *foundPoints)
 {
 
     bool noFoundPoints = false; // flag to know if data needs to be freed or not
@@ -179,7 +177,7 @@ vector<PointPtr> HashTables::range_search(PointPtr queryPoint, double range, std
 
     NeighbourPtr currNeighbour = new Neighbour;
 
-    vector<PointPtr> returnData;
+    std::vector<PointPtr> returnData;
 
     for (int i = 0; i < this->numOfHashTables; i++) // for i from 1 to L do
     {
@@ -216,12 +214,12 @@ void HashTables::PrintHashTables()
 
     for (int i = 0; i < this->numOfHashTables; i++)
     {
-        cout << "Hash Table " << i << ":" << endl;
+        std::cout << "Hash Table " << i << ":" << std::endl;
         for (int j = 0; j < this->TableSize; j++)
         {
-            cout << "\tBucket " << j << ":" << endl;
+            std::cout << "\tBucket " << j << ":" << std::endl;
             for (PointPtr &point : this->hash_tables[i][j].points)
-                cout << "\t\tPoint with id: " << point->id << endl;
+                std::cout << "\t\tPoint with id: " << point->id << std::endl;
         }
     }
 }

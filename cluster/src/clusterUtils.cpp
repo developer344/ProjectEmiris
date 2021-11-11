@@ -1,13 +1,17 @@
-#include "clusterUtils.h"
+#include <fstream>
+#include <algorithm>
 
-double silhouette_calculator(PointPtr point, std::vector<Cluster> clusters, int dimension)
+#include "clusterUtils.h"
+#include "methods.h"
+
+double silhouette_calculator(PointPtr point, std::vector<Cluster> *clusters, int dimension)
 {
 
-    // find 2 closest clusters
-    std::vector<int> closestClusters = get_2_closest_clusters(point, clusters, dimension);
+    // find 2 closest (*clusters)
+    std::vector<int> closestClusters = get_2_closest_clusters(point, (*clusters), dimension);
 
     // find ai
-    ClusterPtr cluster = &clusters[closestClusters[0]];
+    ClusterPtr cluster = &((*clusters)[closestClusters[0]]);
     double distanceSum = 0;
     for (int i = 0; i < cluster->size; i++)
     {
@@ -16,7 +20,7 @@ double silhouette_calculator(PointPtr point, std::vector<Cluster> clusters, int 
     double a = distanceSum / (cluster->size * 1.0); // -1 beacause point belongs in cluster
 
     // find bi
-    cluster = &clusters[closestClusters[1]];
+    cluster = &((*clusters)[closestClusters[1]]);
     distanceSum = 0;
     for (int i = 0; i < cluster->size; i++)
     {
@@ -27,7 +31,7 @@ double silhouette_calculator(PointPtr point, std::vector<Cluster> clusters, int 
     return (b - a) / (std::max(a, b));
 }
 
-std::vector<int> get_2_closest_clusters(PointPtr point, std::vector<Cluster> clusters, int dimension)
+std::vector<int> get_2_closest_clusters(PointPtr point, std::vector<Cluster> *clusters, int dimension)
 {
 
     std::vector<int> closestClusters;
@@ -44,16 +48,16 @@ std::vector<int> get_2_closest_clusters(PointPtr point, std::vector<Cluster> clu
     double cur_dist = 0.0;
 
     // get all centroid points ( we could add this as a parameter)
-    std::vector<PointPtr> centroidPoints;
-    for (int i = 0; i < clusters.size(); i++)
+    std::vector<PointPtr>(*centroidPoints);
+    for (int i = 0; i < (*clusters).size(); i++)
     {
-        centroidPoints.push_back(clusters[i].centroidPoint);
+        (*centroidPoints).push_back((*clusters)[i].centroidPoint);
     }
 
-    for (int i = 0; i < centroidPoints.size(); i++)
+    for (int i = 0; i < (*centroidPoints).size(); i++)
     {
 
-        cur_dist = euclideanDistance(point, centroidPoints[i], dimension);
+        cur_dist = euclideanDistance(point, (*centroidPoints)[i], dimension);
         if (cur_dist < closestDist[1])
         {
             closestDist[1] = cur_dist;
@@ -71,43 +75,6 @@ std::vector<int> get_2_closest_clusters(PointPtr point, std::vector<Cluster> clu
 
     return closestClusters;
 }
-
-// PointPtr update_centroid(ClusterPtr cluster, int dimension)
-// {
-//     //add centroidPoint in clusterPoints
-//     cluster->points.push_back(cluster->centroidPoint);
-//     int numOfPoints = cluster->points.size();
-
-//     PointPtr newCentroid;
-//     double pointDist = 0.0,
-//            minDist = INT32_MAX * 1.0;
-
-//     // create vector of distances between points
-//     std::vector<std::vector<double>> Distances;
-//     Distances.resize(numOfPoints);
-//     for (int i = 0; i < numOfPoints; i++)
-//         Distances[i].resize(numOfPoints);
-
-//     // calculate half distances (upper triangle) and complete the other half
-//     for (int i = 0; i < numOfPoints; i++)
-//         for (int j = 0; j < i; j++)
-//             Distances[i][j] = Distances[j][i] = euclideanDistance(cluster->points[i], cluster->points[j], dimension);
-
-//     //for each point, find sum of all distances and keep point with smallest sum
-//     for (int i = 0; i < numOfPoints; i++)
-//     {
-//         pointDist = 0.0;
-//         for (double dist : Distances[i])
-//             pointDist += dist;
-//         if (pointDist < minDist)
-//         {
-//             minDist = pointDist;
-//             newCentroid = cluster->points[i];
-//         }
-//     }
-
-//     return newCentroid;
-// }
 
 double calculateChanges(std::vector<PointPtr> *centroids, std::vector<Cluster> *clusters, std::vector<PointPtr> *newCentroids, int dimension)
 {
@@ -141,4 +108,401 @@ double calculateChanges(std::vector<PointPtr> *centroids, std::vector<Cluster> *
     }
 
     return change;
+}
+
+int getInputData(int argc, char **argv, inputData *CLData)
+{
+    std::vector<std::string> found;
+    CLData = new inputData;
+
+    // Initializing with default values, which may change depending on the config file's content
+    CLData->number_of_vector_hash_tables = DEF_VECTOR_HASH_TABLES;
+    CLData->number_of_vector_hash_functions = DEF_VECTOR_HASH_FUNCTIONS;
+    CLData->max_number_M_hypercube = DEF_MAX_NUM_M_CUBE;
+    CLData->number_of_hypercube_dimensions = DEF_NUM_CUBE_DIM;
+    CLData->number_of_probes = DEF_PROBES;
+    CLData->complete = false;
+
+    for (int i = 0; i < argc; i++)
+    {
+
+        if (std::string(argv[i]) == "-i")
+        {
+            CLData->inputFileName = std::string(argv[i + 1]);
+            std::cout << CLData->inputFileName << std::endl;
+            found.push_back("inputFile");
+        }
+        else if (std::string(argv[i]) == "-c")
+        {
+            CLData->configFileName = std::string(argv[i + 1]);
+            std::cout << CLData->configFileName << std::endl;
+            found.push_back("configFile");
+        }
+        else if (std::string(argv[i]) == "-o")
+        {
+            CLData->outputFileName = std::string(argv[i + 1]);
+            std::cout << CLData->outputFileName << std::endl;
+            found.push_back("outputFile");
+        }
+        else if (std::string(argv[i]) == "-complete")
+        {
+            CLData->complete = true;
+            std::cout << "-complete" << std::endl;
+            found.push_back("complete");
+        }
+        else if (std::string(argv[i]) == "-m")
+        {
+            CLData->methodName = argv[i + 1];
+            std::cout << CLData->methodName << std::endl;
+            found.push_back("m");
+        }
+    }
+
+    found.push_back(" ");
+
+    if (std::find(found.begin(), found.end(), "inputFile") == found.end()) // if not found inputFile
+    {
+        std::cerr << "Input file name not given! Please try again using -i <input file>" << std::endl;
+        return EXIT_FAIL_INPUT_ERR;
+    }
+    if (std::find(found.begin(), found.end(), "configFile") == found.end()) // if not found inputFile
+    {
+        std::cerr << "Config file name not given! Please try again using -c <config file>" << std::endl;
+        return EXIT_FAIL_CONFIG_ERR;
+    }
+    if (std::find(found.begin(), found.end(), "outputFile") == found.end()) // if not found inputFile
+    {
+        std::cerr << "Output file name not given! Please try again using -o <output file>" << std::endl;
+        return EXIT_FAIL_OUTPUT_ERR;
+    }
+    if (std::find(found.begin(), found.end(), "m") == found.end()) // if not found inputFile
+    {
+        std::cerr << "Method name not given! Please try again using -m <Classic OR LSH OR Hypercube>" << std::endl;
+        return EXIT_FAIL_METHOD_ERR;
+    }
+    else
+    {
+        if (CLData->methodName == "Classic")
+        {
+            CLData->method = CLASSIC_METHOD;
+        }
+        else if (CLData->methodName == "LSH")
+        {
+            CLData->method = LSH_METHOD;
+        }
+        else if (CLData->methodName == "Hypercube")
+        {
+            CLData->method = HYPERCUBE_METHOD;
+        }
+        else
+        {
+            std::cerr << "Invalid method name! Please try again using -m <Classic OR LSH OR Hypercube>" << std::endl;
+            return EXIT_FAIL_METHOD_ERR;
+        }
+    }
+    found.clear();
+    std::ifstream configFile(CLData->configFileName);
+    if (!configFile.is_open())
+    {
+        std::cerr << "Could not open the file: '"
+                  << CLData->configFileName << "'"
+                  << std::endl;
+        return EXIT_FAIL_CONFIG_ERR;
+    }
+    std::cout << "Reading config file " << CLData->configFileName << "..." << std::endl;
+
+    std::string line;
+
+    while (getline(configFile, line))
+    {
+        // inputLines.push_back(line);
+        std::string word = "";
+        std::string parameter = "";
+        int value = -1;
+        for (char x : line)
+        {
+            if (x == ' ')
+            {
+                if (parameter.empty())
+                {
+                    word.pop_back();
+                    parameter = word;
+                    found.push_back(word);
+                }
+                else if (value == -1)
+                {
+                    if (!is_number(word))
+                    {
+                        std::cerr << "Parameter [" << parameter << "]: Value '" << word << "' is not an integer" << std::endl;
+                        return EXIT_FAIL_CONFIG_ERR;
+                    }
+
+                    value = stoi(word);
+                    break;
+                }
+                word = "";
+            }
+            else
+            {
+                word = word + x;
+            }
+        }
+
+        if (parameter == "number_of_clusters")
+        {
+            CLData->number_of_clusters = value;
+        }
+        else if (parameter == "number_of_vector_hash_tables")
+        {
+            CLData->number_of_vector_hash_tables = value;
+        }
+        else if (parameter == "number_of_vector_hash_functions")
+        {
+            CLData->number_of_vector_hash_functions = value;
+        }
+        else if (parameter == "max_number_M_hypercube")
+        {
+            CLData->max_number_M_hypercube = value;
+        }
+        else if (parameter == "number_of_hypercube_dimensions")
+        {
+            CLData->number_of_hypercube_dimensions = value;
+        }
+        else if (parameter == "number_of_probes")
+        {
+            CLData->number_of_probes = value;
+        }
+    }
+    configFile.close();
+
+    found.push_back(" ");
+
+    if (std::find(found.begin(), found.end(), "number_of_clusters") == found.end()) // if not found number_of_clusters
+    {
+        std::cerr << "Config file must contain parameter [number_of_clusters]."
+                  << std::endl
+                  << "Please include 'number_of_clusters: <int>' in the config file..."
+                  << std::endl;
+        return EXIT_FAIL_CONFIG_ERR;
+    }
+    return EXIT_SUCCESS;
+}
+
+int execCluster(inputData *CLData, std::vector<Cluster> *clusters, std::vector<PointPtr> *inputPoints, std::vector<PointPtr> *centroidPoints)
+{
+    std::vector<PointPtr> tempCentroidPoints;
+    bool flag = false;
+    if (CLData->method == CLASSIC_METHOD)
+    {
+
+        double change = INT32_MAX * 1.0;
+        int count = 0;
+        while (change >= TOL / 1000 && count < 50)
+        {
+            if (flag)
+            {
+                for (int i = 0; i < CLData->number_of_clusters; i++)
+                {
+                    delete (*centroidPoints)[i];
+                    (*centroidPoints)[i] = tempCentroidPoints[i];
+                    (*clusters)[i].centroidPoint = tempCentroidPoints[i];
+                }
+                tempCentroidPoints.clear();
+            }
+            else
+                flag = true;
+            for (int c = 0; c < CLData->number_of_clusters; c++)
+            {
+                (*clusters)[c].points.clear();
+                (*clusters)[c].size = 0;
+            }
+            int index = 0;
+            for (int i = 0; i < CLData->numberOfInputPoints; i++)
+            {
+                index = lloyd_method(centroidPoints, (*inputPoints)[i], CLData->dimension);
+                (*clusters)[index].points.push_back((*inputPoints)[i]);
+                (*clusters)[index].size++;
+            }
+            change = calculateChanges(centroidPoints, clusters, &tempCentroidPoints, CLData->dimension);
+
+            std::cout << "Change " << change << "," << count << std::endl;
+            int totalPoints = 0;
+            for (int i = 0; i < CLData->number_of_clusters; i++)
+            {
+                totalPoints += (*clusters)[i].size;
+            }
+            std::cout << "Total points: " << totalPoints << std::endl;
+            count++;
+        }
+    }
+    else if (CLData->method == LSH_METHOD)
+    {
+        HashTables HashTablesObject(CLData->number_of_vector_hash_tables, CLData->number_of_vector_hash_functions, CLData->numberOfInputPoints, CLData->dimension, CLData->numberOfInputPoints / 8);
+
+        for (int i = 0; i < CLData->numberOfInputPoints; i++)
+            HashTablesObject.HashTables::InsertPoint(((*inputPoints))[i]);
+        double change = INT32_MAX * 1.0;
+        int count = 0;
+        while (change >= TOL && count < 30)
+        {
+            if (flag)
+            {
+                for (int i = 0; i < CLData->number_of_clusters; i++)
+                {
+                    delete (*centroidPoints)[i];
+                    (*centroidPoints)[i] = tempCentroidPoints[i];
+                    (*clusters)[i].centroidPoint = tempCentroidPoints[i];
+                }
+                tempCentroidPoints.clear();
+            }
+            else
+                flag = true;
+            for (int c = 0; c < CLData->number_of_clusters; c++)
+            {
+                (*clusters)[c].points.clear();
+                (*clusters)[c].size = 0;
+            }
+            lsh_method(&HashTablesObject, centroidPoints, clusters, inputPoints, CLData, CLData->numberOfInputPoints);
+            change = calculateChanges(centroidPoints, clusters, &tempCentroidPoints, CLData->dimension);
+
+            std::cout << "Change " << change << "," << count << std::endl;
+            int totalPoints = 0;
+            for (int i = 0; i < CLData->number_of_clusters; i++)
+            {
+                totalPoints += (*clusters)[i].size;
+            }
+            std::cout << "Total points: " << totalPoints << std::endl;
+            count++;
+        }
+    }
+    else if (CLData->method == HYPERCUBE_METHOD)
+    {
+        HChashTable HypercubeObject(CLData->dimension, CLData->number_of_hypercube_dimensions, CLData->number_of_probes, CLData->max_number_M_hypercube);
+
+        for (int i = 0; i < CLData->numberOfInputPoints; i++)
+            HypercubeObject.HChashTable::InsertPoint((*inputPoints)[i]);
+        double change = INT32_MAX * 1.0;
+        int count = 0;
+        while (change > TOL && count < 30)
+        {
+            if (flag)
+            {
+                for (int i = 0; i < CLData->number_of_clusters; i++)
+                {
+                    delete (*centroidPoints)[i];
+                    (*centroidPoints)[i] = tempCentroidPoints[i];
+                    (*clusters)[i].centroidPoint = tempCentroidPoints[i];
+                }
+                tempCentroidPoints.clear();
+            }
+            else
+                flag = true;
+            for (int c = 0; c < CLData->number_of_clusters; c++)
+            {
+                (*clusters)[c].points.clear();
+                (*clusters)[c].size = 0;
+            }
+            hyperCube_method(&HypercubeObject, centroidPoints, clusters, inputPoints, CLData, CLData->numberOfInputPoints);
+            change = calculateChanges(centroidPoints, clusters, &tempCentroidPoints, CLData->dimension);
+
+            std::cout << "Change " << change << "," << count << std::endl;
+            int totalPoints = 0;
+            for (int i = 0; i < CLData->number_of_clusters; i++)
+            {
+                totalPoints += (*clusters)[i].size;
+            }
+            std::cout << "Total points: " << totalPoints << std::endl;
+            count++;
+        }
+    }
+    return EXIT_SUCCESS;
+}
+
+double evalSilhouette(inputData *CLData, std::vector<Cluster> *clusters)
+{
+    double totalSilhouette = 0.0;
+    for (int i = 0; i < CLData->number_of_clusters; i++)
+    { // for each cluster
+        double silhouetteSum = 0.0;
+        for (int j = 0; j < (*clusters)[i].size; j++)
+        { // for each point in cluster
+            silhouetteSum += silhouette_calculator((*clusters)[i].points[j], clusters, CLData->dimension);
+        }
+        (*clusters)[i].silhouette = silhouetteSum / (double)((*clusters)[i].size); // saves average
+        totalSilhouette += silhouetteSum;
+    }
+    totalSilhouette /= CLData->numberOfInputPoints;
+}
+
+int writeToOutput(inputData *CLData, std::vector<Cluster> *clusters, std::vector<PointPtr> *centroidPoints, double totalSilhouette, int tCluster)
+{
+    std::ofstream outputFile(CLData->outputFileName);
+    if (!outputFile.is_open())
+    {
+        std::cerr << "Could not open the file: '"
+                  << CLData->outputFileName << "'"
+                  << std::endl;
+        return EXIT_FAIL_OUTPUT_ERR;
+    }
+
+    outputFile << "Algorithm: ";
+    if (CLData->method == CLASSIC_METHOD)
+        outputFile << "Lloyds";
+    else if (CLData->method == LSH_METHOD)
+        outputFile << "Range Search LSH";
+    else if (CLData->method == HYPERCUBE_METHOD)
+        outputFile << "Range Search Hypercube";
+    outputFile << std::endl;
+
+    for (int i = 0; i < CLData->number_of_clusters; i++)
+    {
+        outputFile << "CLUSTER-"
+                   << i + 1 << "{size: " << (*clusters)[i].size
+                   << ", centroid: ";
+
+        for (int j = 0; j < CLData->dimension; j++)
+            outputFile << (*centroidPoints)[i]->coords[j] << " ";
+        outputFile << "}" << std::endl
+                   << std::endl;
+    }
+    outputFile << "clustering_time: " << (double)(tCluster / 1000)
+               << "s" << std::endl;
+    outputFile << "Silhouette: [";
+
+    for (int i = 0; i < CLData->number_of_clusters; i++)
+        outputFile << (*clusters)[i].silhouette << ", ";
+    outputFile << totalSilhouette << "]" << std::endl;
+
+    if (CLData->complete)
+    {
+        outputFile << std::endl;
+        for (int i = 0; i < CLData->number_of_clusters; i++)
+        {
+            std::sort((*clusters)[i].points.begin(), (*clusters)[i].points.end(), BY_ID_INT());
+            outputFile << std::endl
+                       << "CLUSTER-"
+                       << i + 1 << " {"
+                       << (*clusters)[i].centroidPoint->id;
+
+            for (int j = 0; j < (*clusters)[i].size; j++)
+                outputFile << ", " << (*clusters)[i].points[j]->id;
+
+            outputFile << "}" << std::endl;
+        }
+    }
+
+    outputFile.close();
+
+    return EXIT_SUCCESS;
+}
+
+void deleteData(std::vector<PointPtr> *inputPoints, inputData *CLData, std::vector<PointPtr> *centroidPoints)
+{
+    for (int i = 0; i < CLData->numberOfInputPoints; i++)
+        delete (*inputPoints)[i];
+
+    for (int i = 0; CLData->number_of_clusters; i++)
+        delete (*centroidPoints)[i];
+
+    delete CLData;
 }
