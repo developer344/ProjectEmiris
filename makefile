@@ -22,4 +22,4 @@ cluster.out: $(SRCCLUSTER)/cluster.cpp
 	g++ $(CCFLAGS) -o bin/cluster.out $(SRCCLUSTER)/cluster.cpp $(SRCCLUSTER)/clusterUtils.cpp $(SRCLSH)/hashTable.cpp $(SRCCUBE)/HChashTable.cpp $(SRCCLUSTER)/kMeans.cpp $(SRCCLUSTER)/methods.cpp $(SRC)/mathUtils.cpp $(SRC)/projectUtils.cpp -I $(INC) -I $(INCCLUSTER) -I $(INCLSH) -I $(INCCUBE)
 
 clean:
-	rm -r bin/*
+	rm -r bin/* outputFiles/*
