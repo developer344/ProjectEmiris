@@ -20,7 +20,7 @@ int main(int argc, char **argv)
 {
     inputData *CLData;
     int error;
-    if ((error = getInputData(argc, argv)) > 0)
+    if ((error = getInputData(argc, argv, CLData)) > 0)
         return error;
 
     std::vector<std::string> inputLines = get_lines(CLData->inputFileName);

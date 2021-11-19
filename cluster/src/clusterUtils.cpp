@@ -8,7 +8,7 @@ double silhouette_calculator(PointPtr point, std::vector<Cluster> *clusters, int
 {
 
     // find 2 closest (*clusters)
-    std::vector<int> closestClusters = get_2_closest_clusters(point, (*clusters), dimension);
+    std::vector<int> closestClusters = get_2_closest_clusters(point, clusters, dimension);
 
     // find ai
     ClusterPtr cluster = &((*clusters)[closestClusters[0]]);
@@ -432,6 +432,8 @@ double evalSilhouette(inputData *CLData, std::vector<Cluster> *clusters)
         totalSilhouette += silhouetteSum;
     }
     totalSilhouette /= CLData->numberOfInputPoints;
+
+    return totalSilhouette;
 }
 
 int writeToOutput(inputData *CLData, std::vector<Cluster> *clusters, std::vector<PointPtr> *centroidPoints, double totalSilhouette, int tCluster)

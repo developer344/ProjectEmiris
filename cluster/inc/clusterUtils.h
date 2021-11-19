@@ -56,17 +56,17 @@ typedef struct ClusterDataStruct
 } inputData;
 
 double silhouette_calculator(PointPtr point,
-                             std::vector<Cluster> clusters,
+                             std::vector<Cluster> *clusters,
                              int dimensions);
 std::vector<int> get_2_closest_clusters(PointPtr point,
-                                        std::vector<Cluster> clusters,
+                                        std::vector<Cluster> *clusters,
                                         int dimensions);
 PointPtr update_centroid(ClusterPtr cluster, int dimension);
 double calculateChanges(std::vector<PointPtr> *centroids,
                         std::vector<Cluster> *clusters,
                         std::vector<PointPtr> *newCentroids,
                         int dimension);
-int getInputData(int argc, char **argv);
+int getInputData(int argc, char **argv, inputData *CLData);
 int execCluster(inputData *CLData,
                 std::vector<Cluster> *clusters,
                 std::vector<PointPtr> *inputPoints,
