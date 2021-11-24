@@ -20,7 +20,7 @@ int main(int argc, char **argv)
 {
     inputData *CLData;
     int error;
-    if ((error = getInputData(argc, argv, CLData)) > 0)
+    if ((error = getInputData(argc, argv, &CLData)) > 0)
         return error;
 
     std::vector<std::string> inputLines = get_lines(CLData->inputFileName);
@@ -72,13 +72,17 @@ int main(int argc, char **argv)
     double totalSilhouette = evalSilhouette(CLData, &clusters);
 
     std::cout << "Writing output file..." << std::endl;
-    if (!writeToOutput(CLData, &clusters, &centroidPoints, totalSilhouette, tCluster))
+    if (writeToOutput(CLData, &clusters, &centroidPoints, totalSilhouette, tCluster) != 0)
     {
         std::cerr << "Error in writing output" << std::endl;
         return EXIT_FAIL_OUTPUT_ERR;
     }
 
     //Deleting Data Structures
+    std::cout << "Freeing memory..." << std::endl;
+    for (int i = 0; i < CLData->number_of_clusters; i++)
+        delete centroidPoints[i];
+    deleteData(&inputPoints, CLData, &centroidPoints);
 
     return EXIT_SUCCESS;
 }

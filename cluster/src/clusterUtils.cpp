@@ -48,16 +48,15 @@ std::vector<int> get_2_closest_clusters(PointPtr point, std::vector<Cluster> *cl
     double cur_dist = 0.0;
 
     // get all centroid points ( we could add this as a parameter)
-    std::vector<PointPtr>(*centroidPoints);
+    std::vector<PointPtr> centroidPoints;
     for (int i = 0; i < (*clusters).size(); i++)
     {
-        (*centroidPoints).push_back((*clusters)[i].centroidPoint);
+        centroidPoints.push_back((*clusters)[i].centroidPoint);
     }
-
-    for (int i = 0; i < (*centroidPoints).size(); i++)
+    for (int i = 0; i < centroidPoints.size(); i++)
     {
 
-        cur_dist = euclideanDistance(point, (*centroidPoints)[i], dimension);
+        cur_dist = euclideanDistance(point, centroidPoints[i], dimension);
         if (cur_dist < closestDist[1])
         {
             closestDist[1] = cur_dist;
@@ -110,50 +109,50 @@ double calculateChanges(std::vector<PointPtr> *centroids, std::vector<Cluster> *
     return change;
 }
 
-int getInputData(int argc, char **argv, inputData *CLData)
+int getInputData(int argc, char **argv, inputData **CLData)
 {
     std::vector<std::string> found;
-    CLData = new inputData;
+    *CLData = new inputData;
 
     // Initializing with default values, which may change depending on the config file's content
-    CLData->number_of_vector_hash_tables = DEF_VECTOR_HASH_TABLES;
-    CLData->number_of_vector_hash_functions = DEF_VECTOR_HASH_FUNCTIONS;
-    CLData->max_number_M_hypercube = DEF_MAX_NUM_M_CUBE;
-    CLData->number_of_hypercube_dimensions = DEF_NUM_CUBE_DIM;
-    CLData->number_of_probes = DEF_PROBES;
-    CLData->complete = false;
+    (*CLData)->number_of_vector_hash_tables = DEF_VECTOR_HASH_TABLES;
+    (*CLData)->number_of_vector_hash_functions = DEF_VECTOR_HASH_FUNCTIONS;
+    (*CLData)->max_number_M_hypercube = DEF_MAX_NUM_M_CUBE;
+    (*CLData)->number_of_hypercube_dimensions = DEF_NUM_CUBE_DIM;
+    (*CLData)->number_of_probes = DEF_PROBES;
+    (*CLData)->complete = false;
 
     for (int i = 0; i < argc; i++)
     {
 
         if (std::string(argv[i]) == "-i")
         {
-            CLData->inputFileName = std::string(argv[i + 1]);
-            std::cout << CLData->inputFileName << std::endl;
+            (*CLData)->inputFileName = std::string(argv[i + 1]);
+            std::cout << (*CLData)->inputFileName << std::endl;
             found.push_back("inputFile");
         }
         else if (std::string(argv[i]) == "-c")
         {
-            CLData->configFileName = std::string(argv[i + 1]);
-            std::cout << CLData->configFileName << std::endl;
+            (*CLData)->configFileName = std::string(argv[i + 1]);
+            std::cout << (*CLData)->configFileName << std::endl;
             found.push_back("configFile");
         }
         else if (std::string(argv[i]) == "-o")
         {
-            CLData->outputFileName = std::string(argv[i + 1]);
-            std::cout << CLData->outputFileName << std::endl;
+            (*CLData)->outputFileName = std::string(argv[i + 1]);
+            std::cout << (*CLData)->outputFileName << std::endl;
             found.push_back("outputFile");
         }
         else if (std::string(argv[i]) == "-complete")
         {
-            CLData->complete = true;
+            (*CLData)->complete = true;
             std::cout << "-complete" << std::endl;
             found.push_back("complete");
         }
         else if (std::string(argv[i]) == "-m")
         {
-            CLData->methodName = argv[i + 1];
-            std::cout << CLData->methodName << std::endl;
+            (*CLData)->methodName = argv[i + 1];
+            std::cout << (*CLData)->methodName << std::endl;
             found.push_back("m");
         }
     }
@@ -182,17 +181,17 @@ int getInputData(int argc, char **argv, inputData *CLData)
     }
     else
     {
-        if (CLData->methodName == "Classic")
+        if ((*CLData)->methodName == "Classic")
         {
-            CLData->method = CLASSIC_METHOD;
+            (*CLData)->method = CLASSIC_METHOD;
         }
-        else if (CLData->methodName == "LSH")
+        else if ((*CLData)->methodName == "LSH")
         {
-            CLData->method = LSH_METHOD;
+            (*CLData)->method = LSH_METHOD;
         }
-        else if (CLData->methodName == "Hypercube")
+        else if ((*CLData)->methodName == "Hypercube")
         {
-            CLData->method = HYPERCUBE_METHOD;
+            (*CLData)->method = HYPERCUBE_METHOD;
         }
         else
         {
@@ -201,15 +200,15 @@ int getInputData(int argc, char **argv, inputData *CLData)
         }
     }
     found.clear();
-    std::ifstream configFile(CLData->configFileName);
+    std::ifstream configFile((*CLData)->configFileName);
     if (!configFile.is_open())
     {
         std::cerr << "Could not open the file: '"
-                  << CLData->configFileName << "'"
+                  << (*CLData)->configFileName << "'"
                   << std::endl;
         return EXIT_FAIL_CONFIG_ERR;
     }
-    std::cout << "Reading config file " << CLData->configFileName << "..." << std::endl;
+    std::cout << "Reading config file " << (*CLData)->configFileName << "..." << std::endl;
 
     std::string line;
 
@@ -250,27 +249,27 @@ int getInputData(int argc, char **argv, inputData *CLData)
 
         if (parameter == "number_of_clusters")
         {
-            CLData->number_of_clusters = value;
+            (*CLData)->number_of_clusters = value;
         }
         else if (parameter == "number_of_vector_hash_tables")
         {
-            CLData->number_of_vector_hash_tables = value;
+            (*CLData)->number_of_vector_hash_tables = value;
         }
         else if (parameter == "number_of_vector_hash_functions")
         {
-            CLData->number_of_vector_hash_functions = value;
+            (*CLData)->number_of_vector_hash_functions = value;
         }
         else if (parameter == "max_number_M_hypercube")
         {
-            CLData->max_number_M_hypercube = value;
+            (*CLData)->max_number_M_hypercube = value;
         }
         else if (parameter == "number_of_hypercube_dimensions")
         {
-            CLData->number_of_hypercube_dimensions = value;
+            (*CLData)->number_of_hypercube_dimensions = value;
         }
         else if (parameter == "number_of_probes")
         {
-            CLData->number_of_probes = value;
+            (*CLData)->number_of_probes = value;
         }
     }
     configFile.close();
@@ -415,6 +414,8 @@ int execCluster(inputData *CLData, std::vector<Cluster> *clusters, std::vector<P
             count++;
         }
     }
+    for (int j = 0; j < tempCentroidPoints.size(); j++)
+        delete tempCentroidPoints[j];
     return EXIT_SUCCESS;
 }
 
@@ -502,9 +503,5 @@ void deleteData(std::vector<PointPtr> *inputPoints, inputData *CLData, std::vect
 {
     for (int i = 0; i < CLData->numberOfInputPoints; i++)
         delete (*inputPoints)[i];
-
-    for (int i = 0; CLData->number_of_clusters; i++)
-        delete (*centroidPoints)[i];
-
     delete CLData;
 }

@@ -66,7 +66,7 @@ double calculateChanges(std::vector<PointPtr> *centroids,
                         std::vector<Cluster> *clusters,
                         std::vector<PointPtr> *newCentroids,
                         int dimension);
-int getInputData(int argc, char **argv, inputData *CLData);
+int getInputData(int argc, char **argv, inputData **CLData);
 int execCluster(inputData *CLData,
                 std::vector<Cluster> *clusters,
                 std::vector<PointPtr> *inputPoints,
